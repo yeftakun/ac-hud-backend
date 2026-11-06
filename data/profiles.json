@@ -28,7 +28,7 @@
           "dataKey": "rpm",
           "redlineDataKey": "redline",
           "style": "lamp",
-          "fillDirection": "edge-to-center",
+          "fillDirection": "left-to-right",
           "segments": 16,
           "zones": [
             {
@@ -164,7 +164,11 @@
         "payload": {
           "dataKey": "drs.active",
           "activeColor": "#2ee66b",
+          "availableColor": "#ffd400",
           "inactiveColor": "#2a3340",
+          "availableDataKey": "drs.available",
+          "enabledDataKey": "drs.enabled",
+          "activeDataKey": "drs.active",
           "label": "DRS"
         }
       },
@@ -565,48 +569,6 @@
           "xDataKey": "gforce.x",
           "yDataKey": "gforce.y",
           "maxG": 2
-        }
-      },
-      {
-        "id": "w_drs_available",
-        "type": "drs",
-        "x": 674,
-        "y": 165,
-        "w": 62,
-        "h": 50,
-        "zIndex": 2,
-        "style": {
-          "boxBg": "#141820",
-          "boxBorder": "#2a3340",
-          "labelColor": "#a8b2c0",
-          "valueColor": "#ffffff"
-        },
-        "payload": {
-          "dataKey": "drs.available",
-          "activeColor": "#ffd400",
-          "inactiveColor": "#2a3340",
-          "label": "DRS A"
-        }
-      },
-      {
-        "id": "w_drs_enabled",
-        "type": "drs",
-        "x": 744,
-        "y": 165,
-        "w": 62,
-        "h": 50,
-        "zIndex": 2,
-        "style": {
-          "boxBg": "#141820",
-          "boxBorder": "#2a3340",
-          "labelColor": "#a8b2c0",
-          "valueColor": "#ffffff"
-        },
-        "payload": {
-          "dataKey": "drs.enabled",
-          "activeColor": "#2ee66b",
-          "inactiveColor": "#2a3340",
-          "label": "DRS E"
         }
       },
       {
