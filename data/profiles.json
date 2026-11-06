@@ -43,7 +43,8 @@
               "upTo": 1,
               "color": "#ff3b30"
             }
-          ]
+          ],
+          "redline": 7800
         }
       },
       {
@@ -129,10 +130,10 @@
       {
         "id": "w_delta",
         "type": "raw-value",
-        "x": 620,
-        "y": 303,
-        "w": 170,
-        "h": 80,
+        "x": 586,
+        "y": 401,
+        "w": 241,
+        "h": 83,
         "zIndex": 2,
         "style": {
           "boxBg": "#141820",
@@ -150,9 +151,9 @@
       {
         "id": "w_drs",
         "type": "drs",
-        "x": 512,
-        "y": 97,
-        "w": 99,
+        "x": 541,
+        "y": 88,
+        "w": 88,
         "h": 63,
         "zIndex": 2,
         "style": {
@@ -535,7 +536,7 @@
       {
         "id": "w_kers",
         "type": "kers-bar",
-        "x": 646,
+        "x": 661,
         "y": 91,
         "w": 182,
         "h": 60,
@@ -678,6 +679,25 @@
               "blink": false
             }
           }
+        }
+      },
+      {
+        "id": "w_raw_value_mw56h8kb1pix5h",
+        "type": "raw-value",
+        "x": 592,
+        "y": 224,
+        "w": 180,
+        "h": 80,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "rpm",
+          "fontSize": 69
         }
       }
     ]
