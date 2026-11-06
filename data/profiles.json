@@ -4,8 +4,8 @@
     "id": "profile_001",
     "name": "GT3",
     "canvas": {
-      "w": 960,
-      "h": 540,
+      "w": 1280,
+      "h": 680,
       "background": "#11151c",
       "fontFamily": "AC Inter"
     },
@@ -13,10 +13,10 @@
       {
         "id": "w_rpm_bar",
         "type": "rpm-bar",
-        "x": 231,
+        "x": 296,
         "y": 11,
-        "w": 497,
-        "h": 59,
+        "w": 725,
+        "h": 70,
         "zIndex": 2,
         "style": {
           "boxBg": "#141820",
@@ -49,10 +49,10 @@
       {
         "id": "w_activation",
         "type": "activation-lights",
-        "x": 890,
-        "y": 102,
-        "w": 40,
-        "h": 180,
+        "x": 1206,
+        "y": 85,
+        "w": 33,
+        "h": 199,
         "zIndex": 2,
         "style": {
           "boxBg": "#141820",
@@ -90,8 +90,8 @@
       {
         "id": "w_speed",
         "type": "raw-value",
-        "x": 15,
-        "y": 390,
+        "x": 345,
+        "y": 397,
         "w": 155,
         "h": 80,
         "zIndex": 2,
@@ -104,16 +104,16 @@
         "payload": {
           "dataKey": "speed",
           "suffix": " km/h",
-          "fontSize": 48
+          "fontSize": 60
         }
       },
       {
         "id": "w_gear",
         "type": "raw-value",
-        "x": 230,
-        "y": 100,
-        "w": 100,
-        "h": 80,
+        "x": 339,
+        "y": 88,
+        "w": 159,
+        "h": 255,
         "zIndex": 1,
         "style": {
           "boxBg": "#141820",
@@ -123,14 +123,14 @@
         },
         "payload": {
           "dataKey": "gear",
-          "fontSize": 200
+          "fontSize": 300
         }
       },
       {
         "id": "w_delta",
         "type": "raw-value",
-        "x": 330,
-        "y": 114,
+        "x": 620,
+        "y": 303,
         "w": 170,
         "h": 80,
         "zIndex": 2,
@@ -144,16 +144,16 @@
           "dataKey": "delta",
           "showSign": true,
           "decimals": 3,
-          "fontSize": 48
+          "fontSize": 60
         }
       },
       {
         "id": "w_drs",
         "type": "drs",
-        "x": 520,
-        "y": 100,
-        "w": 120,
-        "h": 80,
+        "x": 512,
+        "y": 97,
+        "w": 99,
+        "h": 63,
         "zIndex": 2,
         "style": {
           "boxBg": "#141820",
@@ -175,9 +175,9 @@
       {
         "id": "w_current_lap",
         "type": "stat-box",
-        "x": 674,
-        "y": 94,
-        "w": 200,
+        "x": 847,
+        "y": 90,
+        "w": 330,
         "h": 65,
         "zIndex": 2,
         "style": {
@@ -192,16 +192,17 @@
           "label": "CURRENT LAP",
           "unit": null,
           "decimals": 3,
-          "format": "laptime"
+          "format": "laptime",
+          "fontSize": 60
         }
       },
       {
         "id": "w_best_lap",
         "type": "stat-box",
-        "x": 340,
-        "y": 210,
-        "w": 160,
-        "h": 65,
+        "x": 886,
+        "y": 163,
+        "w": 288,
+        "h": 60,
         "zIndex": 2,
         "style": {
           "boxBg": "#141820",
@@ -215,16 +216,17 @@
           "label": "BEST LAP",
           "unit": null,
           "decimals": 3,
-          "format": "laptime"
+          "format": "laptime",
+          "fontSize": 40
         }
       },
       {
         "id": "w_lap_counter",
         "type": "stat-box",
-        "x": 510,
-        "y": 210,
-        "w": 130,
-        "h": 65,
+        "x": 883,
+        "y": 375,
+        "w": 115,
+        "h": 69,
         "zIndex": 2,
         "style": {
           "boxBg": "#141820",
@@ -237,16 +239,17 @@
           "variant": "short",
           "label": "LAP",
           "unit": null,
-          "decimals": 0
+          "decimals": 0,
+          "fontSize": 50
         }
       },
       {
         "id": "w_last_lap",
         "type": "stat-box",
-        "x": 340,
-        "y": 290,
-        "w": 160,
-        "h": 65,
+        "x": 893,
+        "y": 239,
+        "w": 286,
+        "h": 63,
         "zIndex": 2,
         "style": {
           "boxBg": "#141820",
@@ -260,20 +263,21 @@
           "label": "LAST LAP",
           "unit": null,
           "decimals": 3,
-          "format": "laptime"
+          "format": "laptime",
+          "fontSize": 40
         }
       },
       {
         "id": "w_est_lap",
         "type": "stat-box",
-        "x": 510,
-        "y": 290,
-        "w": 130,
-        "h": 65,
+        "x": 99,
+        "y": 147,
+        "w": 145,
+        "h": 70,
         "zIndex": 2,
         "style": {
           "boxBg": "#141820",
-          "boxBorder": "#2a3340",
+          "boxBorder": "#ff0000",
           "labelColor": "#a8b2c0",
           "valueColor": "#ffffff"
         },
@@ -282,16 +286,17 @@
           "variant": "long",
           "label": "EST LAP",
           "unit": null,
-          "decimals": 3
+          "decimals": 3,
+          "fontSize": 50
         }
       },
       {
         "id": "w_position",
         "type": "stat-box",
-        "x": 340,
-        "y": 370,
+        "x": 102,
+        "y": 227,
         "w": 130,
-        "h": 65,
+        "h": 73,
         "zIndex": 2,
         "style": {
           "boxBg": "#141820",
@@ -304,20 +309,21 @@
           "variant": "short",
           "label": "POS",
           "unit": null,
-          "decimals": 0
+          "decimals": 0,
+          "fontSize": 60
         }
       },
       {
         "id": "w_fuel",
         "type": "stat-box",
-        "x": 490,
-        "y": 370,
-        "w": 130,
-        "h": 65,
+        "x": 100,
+        "y": 68,
+        "w": 146,
+        "h": 68,
         "zIndex": 2,
         "style": {
-          "boxBg": "#141820",
-          "boxBorder": "#2a3340",
+          "boxBg": "#11151c",
+          "boxBorder": "#ff0000",
           "labelColor": "#a8b2c0",
           "valueColor": "#ffffff"
         },
@@ -326,20 +332,21 @@
           "variant": "short",
           "label": "FUEL",
           "unit": "L",
-          "decimals": 1
+          "decimals": 1,
+          "fontSize": 59
         }
       },
       {
         "id": "w_abs",
         "type": "stat-box",
-        "x": 340,
-        "y": 450,
+        "x": 106,
+        "y": 309,
         "w": 100,
         "h": 65,
         "zIndex": 2,
         "style": {
           "boxBg": "#141820",
-          "boxBorder": "#2a3340",
+          "boxBorder": "#0011ff",
           "labelColor": "#a8b2c0",
           "valueColor": "#ffffff"
         },
@@ -348,20 +355,21 @@
           "variant": "short",
           "label": "ABS",
           "unit": null,
-          "decimals": 0
+          "decimals": 0,
+          "fontSize": 60
         }
       },
       {
         "id": "w_tc",
         "type": "stat-box",
-        "x": 455,
-        "y": 450,
+        "x": 107,
+        "y": 384,
         "w": 100,
         "h": 65,
         "zIndex": 2,
         "style": {
           "boxBg": "#141820",
-          "boxBorder": "#2a3340",
+          "boxBorder": "#0412c9",
           "labelColor": "#a8b2c0",
           "valueColor": "#ffffff"
         },
@@ -370,20 +378,21 @@
           "variant": "short",
           "label": "TC",
           "unit": null,
-          "decimals": 0
+          "decimals": 0,
+          "fontSize": 60
         }
       },
       {
         "id": "w_bb",
         "type": "stat-box",
-        "x": 570,
-        "y": 450,
-        "w": 100,
+        "x": 107,
+        "y": 457,
+        "w": 120,
         "h": 65,
         "zIndex": 3,
         "style": {
           "boxBg": "#141820",
-          "boxBorder": "#2a3340",
+          "boxBorder": "#0412c9",
           "labelColor": "#a8b2c0",
           "valueColor": "#ffffff"
         },
@@ -392,16 +401,17 @@
           "variant": "short",
           "label": "BB",
           "unit": "%",
-          "decimals": 1
+          "decimals": 1,
+          "fontSize": 45
         }
       },
       {
         "id": "w_tyres",
         "type": "tyres",
-        "x": 761,
-        "y": 314,
-        "w": 148,
-        "h": 203,
+        "x": 1026,
+        "y": 421,
+        "w": 194,
+        "h": 250,
         "zIndex": 2,
         "style": {
           "boxBg": "#141820",
@@ -444,10 +454,10 @@
       {
         "id": "w_throttle",
         "type": "pedal-bar",
-        "x": 15,
-        "y": 15,
-        "w": 200,
-        "h": 45,
+        "x": 311,
+        "y": 492,
+        "w": 205,
+        "h": 47,
         "zIndex": 2,
         "style": {
           "boxBg": "#141820",
@@ -465,9 +475,9 @@
       {
         "id": "w_brake",
         "type": "pedal-bar",
-        "x": 15,
-        "y": 68,
-        "w": 200,
+        "x": 312,
+        "y": 548,
+        "w": 202,
         "h": 45,
         "zIndex": 2,
         "style": {
@@ -484,37 +494,16 @@
         }
       },
       {
-        "id": "w_clutch",
-        "type": "pedal-bar",
-        "x": 15,
-        "y": 121,
-        "w": 200,
-        "h": 45,
-        "zIndex": 2,
-        "style": {
-          "boxBg": "#141820",
-          "boxBorder": "#2a3340",
-          "labelColor": "#a8b2c0",
-          "valueColor": "#ffffff"
-        },
-        "payload": {
-          "dataKey": "clutch",
-          "label": "CLUTCH",
-          "color": "#4f9cff",
-          "max": 100
-        }
-      },
-      {
         "id": "w_steering",
         "type": "steering-wheel",
-        "x": 15,
-        "y": 225,
-        "w": 150,
-        "h": 140,
+        "x": 663,
+        "y": 519,
+        "w": 137,
+        "h": 130,
         "zIndex": 2,
         "style": {
           "boxBg": "#141820",
-          "boxBorder": "#2a3340",
+          "boxBorder": "#11151c",
           "labelColor": "#a8b2c0",
           "valueColor": "#ffffff"
         },
@@ -524,44 +513,16 @@
         }
       },
       {
-        "id": "w_car_condition",
-        "type": "stat-group",
-        "x": 190,
-        "y": 225,
-        "w": 125,
-        "h": 100,
-        "zIndex": 2,
-        "style": {
-          "boxBg": "#141820",
-          "boxBorder": "#2a3340",
-          "labelColor": "#a8b2c0",
-          "valueColor": "#ffffff"
-        },
-        "payload": {
-          "fontSize": 16,
-          "rows": [
-            {
-              "label": "TYRES OUT",
-              "dataKey": "tyres.out"
-            },
-            {
-              "label": "AI",
-              "dataKey": "car.ai"
-            }
-          ]
-        }
-      },
-      {
         "id": "w_gforce",
         "type": "gforce",
-        "x": 180,
-        "y": 380,
-        "w": 140,
-        "h": 140,
+        "x": 790,
+        "y": 489,
+        "w": 221,
+        "h": 184,
         "zIndex": 2,
         "style": {
-          "boxBg": "#141820",
-          "boxBorder": "#2a3340",
+          "boxBg": "#11151c",
+          "boxBorder": "#11151c",
           "labelColor": "#a8b2c0",
           "valueColor": "#ffffff"
         },
@@ -574,9 +535,9 @@
       {
         "id": "w_kers",
         "type": "kers-bar",
-        "x": 674,
-        "y": 225,
-        "w": 200,
+        "x": 646,
+        "y": 91,
+        "w": 182,
         "h": 60,
         "zIndex": 2,
         "style": {
@@ -591,54 +552,11 @@
         }
       },
       {
-        "id": "w_turbo_boost",
-        "type": "stat-box",
-        "x": 674,
-        "y": 290,
-        "w": 80,
-        "h": 60,
-        "zIndex": 2,
-        "style": {
-          "boxBg": "#141820",
-          "boxBorder": "#2a3340",
-          "labelColor": "#a8b2c0",
-          "valueColor": "#ffffff"
-        },
-        "payload": {
-          "dataKey": "turbo.boost",
-          "label": "BOOST",
-          "unit": "bar",
-          "decimals": 1,
-          "fontSize": 18
-        }
-      },
-      {
-        "id": "w_engine_brake",
-        "type": "stat-box",
-        "x": 674,
-        "y": 360,
-        "w": 80,
-        "h": 60,
-        "zIndex": 2,
-        "style": {
-          "boxBg": "#141820",
-          "boxBorder": "#2a3340",
-          "labelColor": "#a8b2c0",
-          "valueColor": "#ffffff"
-        },
-        "payload": {
-          "dataKey": "engine.brake",
-          "label": "E-BRAKE",
-          "decimals": 0,
-          "fontSize": 18
-        }
-      },
-      {
         "id": "w_tyre_wear_fl",
         "type": "tyre-wear-bar",
-        "x": 674,
-        "y": 430,
-        "w": 80,
+        "x": 1024,
+        "y": 366,
+        "w": 195,
         "h": 65,
         "zIndex": 2,
         "style": {
@@ -655,10 +573,10 @@
       {
         "id": "w_air_temp",
         "type": "stat-box",
-        "x": 674,
-        "y": 500,
-        "w": 80,
-        "h": 35,
+        "x": 105,
+        "y": 532,
+        "w": 140,
+        "h": 57,
         "zIndex": 2,
         "style": {
           "boxBg": "#141820",
@@ -671,16 +589,16 @@
           "label": "AIR",
           "unit": "°C",
           "decimals": 1,
-          "fontSize": 15
+          "fontSize": 40
         }
       },
       {
         "id": "w_road_temp",
         "type": "stat-box",
-        "x": 230,
-        "y": 330,
-        "w": 80,
-        "h": 35,
+        "x": 106,
+        "y": 597,
+        "w": 133,
+        "h": 55,
         "zIndex": 2,
         "style": {
           "boxBg": "#141820",
@@ -693,7 +611,7 @@
           "label": "ROAD",
           "unit": "°C",
           "decimals": 1,
-          "fontSize": 15
+          "fontSize": 40
         }
       },
       {
@@ -719,6 +637,47 @@
           "autoDismissMs": null,
           "transition": "fade",
           "transitionMs": 250
+        }
+      },
+      {
+        "id": "w_activation_lights_mw54twjg4v32vl",
+        "type": "activation-lights",
+        "x": 39,
+        "y": 88,
+        "w": 30,
+        "h": 200,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "lampCount": 4,
+          "priority": [
+            "abs",
+            "tc",
+            "pit"
+          ],
+          "states": {
+            "pit": {
+              "dataKey": "pit.active",
+              "color": "#ffd400",
+              "blink": true,
+              "blinkMs": 400
+            },
+            "abs": {
+              "dataKey": "abs.active",
+              "color": "#ff3b30",
+              "blink": false
+            },
+            "tc": {
+              "dataKey": "tc.active",
+              "color": "#a855f7",
+              "blink": false
+            }
+          }
         }
       }
     ]
