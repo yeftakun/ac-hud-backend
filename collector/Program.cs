@@ -18,6 +18,27 @@ internal static class Program
     private static readonly object StateLock = new();
     private static readonly Dictionary<string, object?> State = new()
     {
+        ["throttle"] = 0f,
+        ["brake"] = 0f,
+        ["clutch"] = 0f,
+        ["steering"] = 0f,
+        ["drs.available"] = false,
+        ["drs.enabled"] = false,
+        ["kers.charge"] = 0f,
+        ["kers.input"] = 0f,
+        ["turbo.boost"] = 0f,
+        ["engine.brake"] = 0,
+        ["tyres.FL.wear"] = 0f,
+        ["tyres.FR.wear"] = 0f,
+        ["tyres.RL.wear"] = 0f,
+        ["tyres.RR.wear"] = 0f,
+        ["tyres.out"] = 0,
+        ["car.ai"] = false,
+        ["gforce.x"] = 0f,
+        ["gforce.y"] = 0f,
+        ["gforce.z"] = 0f,
+        ["air.temp"] = 0f,
+        ["road.temp"] = 0f,
         ["abs.active"] = false,
         ["tc.active"] = false,
     };
@@ -116,9 +137,14 @@ internal static class Program
         var absActive = UseActivationHeuristic && physics.Abs > 0 && brake > 0.2f && maxSlip > 0.08f;
         var tcActive = UseActivationHeuristic && physics.TC > 0 && throttle > 0.5f && maxSlip > 0.08f;
         var brakeBias = physics.BrakeBias <= 1.01f ? physics.BrakeBias * 100 : physics.BrakeBias;
+        var acceleration = physics.AccG ?? Array.Empty<float>();
 
         UpdateState(new Dictionary<string, object?>
         {
+            ["throttle"] = ToPercent(throttle),
+            ["brake"] = ToPercent(brake),
+            ["clutch"] = ToPercent(physics.Clutch),
+            ["steering"] = Math.Clamp(physics.SteerAngle, -1f, 1f),
             ["speed"] = (int)Math.Round(Math.Max(0, physics.SpeedKmh), MidpointRounding.AwayFromZero),
             ["gear"] = FormatGear(physics.Gear),
             ["rpm"] = physics.Rpms,
@@ -130,7 +156,24 @@ internal static class Program
             ["abs.active"] = absActive,
             ["tc.active"] = tcActive,
             ["pit.active"] = physics.PitLimiterOn != 0,
-            ["drs.active"] = physics.Drs > 0.5f || physics.DrsEnabled != 0,
+            ["drs.available"] = physics.DrsAvailable != 0,
+            ["drs.enabled"] = physics.DrsEnabled != 0,
+            ["drs.active"] = physics.Drs > 0.5f,
+            ["kers.charge"] = ToPercent(physics.KersCharge),
+            ["kers.input"] = ToPercent(physics.KersInput),
+            ["turbo.boost"] = physics.TurboBoost,
+            ["engine.brake"] = physics.EngineBrake,
+            ["tyres.FL.wear"] = ToPercent(ReadArray(physics.TyreWear, 0)),
+            ["tyres.FR.wear"] = ToPercent(ReadArray(physics.TyreWear, 1)),
+            ["tyres.RL.wear"] = ToPercent(ReadArray(physics.TyreWear, 2)),
+            ["tyres.RR.wear"] = ToPercent(ReadArray(physics.TyreWear, 3)),
+            ["tyres.out"] = physics.NumberOfTyresOut,
+            ["car.ai"] = physics.IsAIControlled != 0,
+            ["gforce.x"] = ReadArray(acceleration, 0),
+            ["gforce.y"] = ReadArray(acceleration, 2),
+            ["gforce.z"] = ReadArray(acceleration, 1),
+            ["air.temp"] = physics.AirTemp,
+            ["road.temp"] = physics.RoadTemp,
             ["tyres.FL.psi"] = ReadArray(physics.WheelsPressure, 0),
             ["tyres.FR.psi"] = ReadArray(physics.WheelsPressure, 1),
             ["tyres.RL.psi"] = ReadArray(physics.WheelsPressure, 2),
@@ -198,6 +241,16 @@ internal static class Program
     private static float? ReadArray(float[]? values, int index)
     {
         return values is { Length: > 0 } && index < values.Length ? values[index] : null;
+    }
+
+    private static float ToPercent(float value)
+    {
+        return Math.Clamp(value * 100f, 0f, 100f);
+    }
+
+    private static float? ToPercent(float? value)
+    {
+        return value is null ? null : ToPercent(value.Value);
     }
 
     private static void UpdateState(IReadOnlyDictionary<string, object?> values)

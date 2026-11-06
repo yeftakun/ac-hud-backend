@@ -90,9 +90,9 @@
       {
         "id": "w_speed",
         "type": "raw-value",
-        "x": 192,
-        "y": 152,
-        "w": 170,
+        "x": 15,
+        "y": 390,
+        "w": 155,
         "h": 80,
         "zIndex": 2,
         "style": {
@@ -110,11 +110,11 @@
       {
         "id": "w_gear",
         "type": "raw-value",
-        "x": 217,
-        "y": 76,
+        "x": 230,
+        "y": 100,
         "w": 100,
         "h": 80,
-        "zIndex": 2,
+        "zIndex": 1,
         "style": {
           "boxBg": "#141820",
           "boxBorder": "#2a3340",
@@ -123,14 +123,14 @@
         },
         "payload": {
           "dataKey": "gear",
-          "fontSize": 56
+          "fontSize": 200
         }
       },
       {
         "id": "w_delta",
         "type": "raw-value",
         "x": 330,
-        "y": 100,
+        "y": 114,
         "w": 170,
         "h": 80,
         "zIndex": 2,
@@ -189,47 +189,6 @@
           "unit": null,
           "decimals": 3,
           "format": "laptime"
-        }
-      },
-      {
-        "id": "w_engine_stats",
-        "type": "stat-group",
-        "x": 20,
-        "y": 210,
-        "w": 300,
-        "h": 150,
-        "zIndex": 2,
-        "style": {
-          "boxBg": "#141820",
-          "boxBorder": "#2a3340",
-          "labelColor": "#a8b2c0",
-          "valueColor": "#ffffff"
-        },
-        "payload": {
-          "rows": [
-            {
-              "dataKey": "engine.oilTemp",
-              "label": "OIL TEMP",
-              "unit": "°C"
-            },
-            {
-              "dataKey": "engine.oilPressure",
-              "label": "OIL PRESS",
-              "unit": "bar",
-              "decimals": 1
-            },
-            {
-              "dataKey": "engine.waterTemp",
-              "label": "WATER TEMP",
-              "unit": "°C"
-            },
-            {
-              "dataKey": "engine.waterPressure",
-              "label": "WATER PRESS",
-              "unit": "bar",
-              "decimals": 1
-            }
-          ]
         }
       },
       {
@@ -337,9 +296,9 @@
           "valueColor": "#ffffff"
         },
         "payload": {
-          "dataKey": "rpm",
+          "dataKey": "position",
           "variant": "short",
-          "label": "RPM",
+          "label": "POS",
           "unit": null,
           "decimals": 0
         }
@@ -476,6 +435,303 @@
             "optimal": 95,
             "hot": 110
           }
+        }
+      },
+      {
+        "id": "w_throttle",
+        "type": "pedal-bar",
+        "x": 15,
+        "y": 15,
+        "w": 200,
+        "h": 45,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "throttle",
+          "label": "THROTTLE",
+          "color": "#2ee66b",
+          "max": 100
+        }
+      },
+      {
+        "id": "w_brake",
+        "type": "pedal-bar",
+        "x": 15,
+        "y": 68,
+        "w": 200,
+        "h": 45,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "brake",
+          "label": "BRAKE",
+          "color": "#ff3b30",
+          "max": 100
+        }
+      },
+      {
+        "id": "w_clutch",
+        "type": "pedal-bar",
+        "x": 15,
+        "y": 121,
+        "w": 200,
+        "h": 45,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "clutch",
+          "label": "CLUTCH",
+          "color": "#4f9cff",
+          "max": 100
+        }
+      },
+      {
+        "id": "w_steering",
+        "type": "steering-wheel",
+        "x": 15,
+        "y": 225,
+        "w": 150,
+        "h": 140,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "steering",
+          "maxInput": 1
+        }
+      },
+      {
+        "id": "w_car_condition",
+        "type": "stat-group",
+        "x": 190,
+        "y": 225,
+        "w": 125,
+        "h": 100,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "fontSize": 16,
+          "rows": [
+            {
+              "label": "TYRES OUT",
+              "dataKey": "tyres.out"
+            },
+            {
+              "label": "AI",
+              "dataKey": "car.ai"
+            }
+          ]
+        }
+      },
+      {
+        "id": "w_gforce",
+        "type": "gforce",
+        "x": 180,
+        "y": 380,
+        "w": 140,
+        "h": 140,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "xDataKey": "gforce.x",
+          "yDataKey": "gforce.y",
+          "maxG": 2
+        }
+      },
+      {
+        "id": "w_drs_available",
+        "type": "drs",
+        "x": 674,
+        "y": 165,
+        "w": 62,
+        "h": 50,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "drs.available",
+          "activeColor": "#ffd400",
+          "inactiveColor": "#2a3340",
+          "label": "DRS A"
+        }
+      },
+      {
+        "id": "w_drs_enabled",
+        "type": "drs",
+        "x": 744,
+        "y": 165,
+        "w": 62,
+        "h": 50,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "drs.enabled",
+          "activeColor": "#2ee66b",
+          "inactiveColor": "#2a3340",
+          "label": "DRS E"
+        }
+      },
+      {
+        "id": "w_kers",
+        "type": "kers-bar",
+        "x": 674,
+        "y": 225,
+        "w": 200,
+        "h": 60,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "kers.charge",
+          "inputDataKey": "kers.input"
+        }
+      },
+      {
+        "id": "w_turbo_boost",
+        "type": "stat-box",
+        "x": 674,
+        "y": 290,
+        "w": 80,
+        "h": 60,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "turbo.boost",
+          "label": "BOOST",
+          "unit": "bar",
+          "decimals": 1,
+          "fontSize": 18
+        }
+      },
+      {
+        "id": "w_engine_brake",
+        "type": "stat-box",
+        "x": 674,
+        "y": 360,
+        "w": 80,
+        "h": 60,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "engine.brake",
+          "label": "E-BRAKE",
+          "decimals": 0,
+          "fontSize": 18
+        }
+      },
+      {
+        "id": "w_tyre_wear_fl",
+        "type": "tyre-wear-bar",
+        "x": 674,
+        "y": 430,
+        "w": 80,
+        "h": 65,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "tyres.FL.wear",
+          "label": "FL WEAR"
+        }
+      },
+      {
+        "id": "w_air_temp",
+        "type": "stat-box",
+        "x": 674,
+        "y": 500,
+        "w": 80,
+        "h": 35,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "air.temp",
+          "label": "AIR",
+          "unit": "°C",
+          "decimals": 1,
+          "fontSize": 15
+        }
+      },
+      {
+        "id": "w_road_temp",
+        "type": "stat-box",
+        "x": 230,
+        "y": 330,
+        "w": 80,
+        "h": 35,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "road.temp",
+          "label": "ROAD",
+          "unit": "°C",
+          "decimals": 1,
+          "fontSize": 15
         }
       },
       {
