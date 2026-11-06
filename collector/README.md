@@ -53,4 +53,25 @@ Collector akan retry menunggu shared memory saat Assetto Corsa belum dibuka. Tek
 
 Field yang tidak tersedia langsung dari shared memory standar harus diberi mapper/derivation terpisah, terutama `abs.active`, `tc.active`, dan data temperatur/tekanan engine. Collector membulatkan speed, memetakan `PerformanceMeter` ke `delta`, memformat gear menjadi `R`/`N`/angka, dan menghitung estimasi jumlah lap dari konsumsi fuel per lap. Heuristic ABS/TC tersedia opt-in melalui environment variable, tetapi default-nya mati.
 
+Untuk field tambahan dari Custom Shaders Patch, gunakan sumber terpisah yang mengirim patch flat ke backend:
+
+```text
+POST http://127.0.0.1:3001/telemetry/patch
+```
+
+Contoh payload:
+
+```json
+{
+  "abs.active": true,
+  "tc.active": false,
+  "engine.oilTemp": 104.2,
+  "engine.oilPressure": 4.9,
+  "engine.waterTemp": 88.1,
+  "engine.waterPressure": 1.7
+}
+```
+
+Backend memberi prioritas sementara pada field patch tersebut. Jika bridge tidak mengirim patch selama TTL backend, nilainya dianggap stale dan collector utama kembali menjadi sumber aktif. Dengan begitu collector ini tidak perlu dirombak saat bridge CSP ditambahkan.
+
 Pastikan Shared Memory diaktifkan pada konfigurasi Assetto Corsa sebelum pengujian. Collector menggunakan library open-source yang disimpan di `vendor/AssettoCorsaSharedMemory`; lisensinya ikut tersedia di folder vendor.

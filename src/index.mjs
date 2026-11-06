@@ -7,6 +7,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const PORT = Number(process.env.PORT ?? 3001);
 const DATA_FILE = resolve(ROOT, "data/profiles.json");
 const CAPTURE_FILE = resolve(ROOT, "data/capture.json");
+const CSP_FRESH_MS = Number(process.env.CSP_FRESH_MS ?? 1500);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,6 +17,10 @@ const corsHeaders = {
 
 const telemetryClients = new Set();
 let liveTelemetry = null;
+let standardTelemetry = null;
+let cspTelemetry = {};
+let cspUpdatedAt = 0;
+let cspExpiryTimer = null;
 
 function sendJson(response, statusCode, body) {
   response.writeHead(statusCode, {
@@ -84,6 +89,40 @@ async function readBaselineTelemetry() {
   return telemetry;
 }
 
+function isCspFresh(now = Date.now()) {
+  return cspUpdatedAt > 0 && now - cspUpdatedAt <= CSP_FRESH_MS;
+}
+
+function getMergedTelemetry() {
+  if (!standardTelemetry) return null;
+  return isCspFresh()
+    ? { ...standardTelemetry, ...cspTelemetry }
+    : { ...standardTelemetry };
+}
+
+async function ensureTelemetryInitialized() {
+  if (!standardTelemetry) standardTelemetry = await readBaselineTelemetry();
+  liveTelemetry = getMergedTelemetry();
+  return liveTelemetry;
+}
+
+function publishMergedTelemetry() {
+  const merged = getMergedTelemetry();
+  if (!merged) return null;
+  liveTelemetry = merged;
+  broadcastTelemetry(merged);
+  return merged;
+}
+
+function scheduleCspExpiry() {
+  if (cspExpiryTimer) clearTimeout(cspExpiryTimer);
+  cspExpiryTimer = setTimeout(() => {
+    cspExpiryTimer = null;
+    if (!isCspFresh()) publishMergedTelemetry();
+  }, CSP_FRESH_MS + 25);
+  cspExpiryTimer.unref?.();
+}
+
 function broadcastTelemetry(telemetry) {
   const event = `data: ${JSON.stringify(telemetry)}\n\n`;
   for (const client of telemetryClients) {
@@ -111,7 +150,7 @@ async function readBody(request) {
 
 async function handleTelemetry(request, response, parts) {
   if (request.method === "GET" && parts[1] === "events" && parts.length === 2) {
-    if (!liveTelemetry) liveTelemetry = await readBaselineTelemetry();
+    await ensureTelemetryInitialized();
     response.writeHead(200, {
       ...corsHeaders,
       "Content-Type": "text/event-stream; charset=utf-8",
@@ -126,8 +165,7 @@ async function handleTelemetry(request, response, parts) {
   }
 
   if (request.method === "GET" && parts.length === 1) {
-    if (!liveTelemetry) liveTelemetry = await readBaselineTelemetry();
-    sendJson(response, 200, liveTelemetry);
+    sendJson(response, 200, await ensureTelemetryInitialized());
     return;
   }
 
@@ -138,9 +176,30 @@ async function handleTelemetry(request, response, parts) {
       sendJson(response, 400, { error: validationError });
       return;
     }
-    liveTelemetry = telemetry;
-    broadcastTelemetry(liveTelemetry);
-    sendJson(response, 200, liveTelemetry);
+    standardTelemetry = telemetry;
+    const merged = publishMergedTelemetry();
+    sendJson(response, 200, merged);
+    return;
+  }
+
+  if (request.method === "POST" && parts[1] === "patch" && parts.length === 2) {
+    const patch = await readBody(request);
+    const validationError = validateTelemetry(patch);
+    if (validationError) {
+      sendJson(response, 400, { error: validationError });
+      return;
+    }
+
+    await ensureTelemetryInitialized();
+    cspTelemetry = { ...cspTelemetry, ...patch };
+    cspUpdatedAt = Date.now();
+    scheduleCspExpiry();
+    const merged = publishMergedTelemetry();
+    sendJson(response, 200, {
+      telemetry: merged,
+      source: "csp",
+      cspFreshMs: CSP_FRESH_MS,
+    });
     return;
   }
 
@@ -159,7 +218,14 @@ const server = createServer(async (request, response) => {
 
   try {
     if (parts[0] === "health" && request.method === "GET") {
-      sendJson(response, 200, { ok: true, service: "ac-hud-backend", telemetryClients: telemetryClients.size });
+      sendJson(response, 200, {
+        ok: true,
+        service: "ac-hud-backend",
+        telemetryClients: telemetryClients.size,
+        cspFresh: isCspFresh(),
+        cspAgeMs: cspUpdatedAt > 0 ? Date.now() - cspUpdatedAt : null,
+        cspFreshMs: CSP_FRESH_MS,
+      });
       return;
     }
 
