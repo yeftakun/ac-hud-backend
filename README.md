@@ -120,3 +120,5 @@ Frontend tidak perlu mengetahui apakah telemetry berasal dari halaman `/data` at
 Rencana collector berada di [`collector/README.md`](collector/README.md). AC original menyediakan shared memory physics, graphics, dan static. Collector akan membaca sumber tersebut, melakukan normalisasi, kemudian mengirim `POST /telemetry/ingest` ke server lokal.
 
 Bridge CSP belum dipaksa masuk ke collector shared-memory utama. Ia cukup mengirim field yang tidak tersedia atau tidak akurat dari shared memory standar ke `POST /telemetry/patch` secara berkala. Dokumentasi resmi CSP memang menyediakan input `ABS_INACTION`, `TRACTIONCONTROL_INACTION`, `OIL_TEMPERATURE`, dan `OIL_PRESSURE`, tetapi cara mengambilnya ke proses Windows eksternal tetap perlu disesuaikan dengan versi CSP, mode Content Manager, dan mobil yang dipakai. API sumbernya harus divalidasi pada instalasi pengguna sebelum dibuat adapter permanen.
+
+Adapter Python App yang siap dicoba tersedia di [`csp-bridge/README.md`](csp-bridge/README.md). Adapter ini memprioritaskan state intervensi ABS/TC dan level setting ABS/TC, tanpa mengubah collector utama.
