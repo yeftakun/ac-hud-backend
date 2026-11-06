@@ -1,0 +1,14 @@
+D:\code\ac-hud-backend\collector\bin\Debug\net8.0-windows\AcTelemetryCollector.exe
+D:\code\ac-hud-backend\collector\bin\Debug\net8.0-windows\AcTelemetryCollector.deps.json
+D:\code\ac-hud-backend\collector\bin\Debug\net8.0-windows\AcTelemetryCollector.runtimeconfig.json
+D:\code\ac-hud-backend\collector\bin\Debug\net8.0-windows\AcTelemetryCollector.dll
+D:\code\ac-hud-backend\collector\bin\Debug\net8.0-windows\AcTelemetryCollector.pdb
+D:\code\ac-hud-backend\collector\obj\Debug\net8.0-windows\AcTelemetryCollector.GeneratedMSBuildEditorConfig.editorconfig
+D:\code\ac-hud-backend\collector\obj\Debug\net8.0-windows\AcTelemetryCollector.AssemblyInfoInputs.cache
+D:\code\ac-hud-backend\collector\obj\Debug\net8.0-windows\AcTelemetryCollector.AssemblyInfo.cs
+D:\code\ac-hud-backend\collector\obj\Debug\net8.0-windows\AcTelemetryCollector.csproj.CoreCompileInputs.cache
+D:\code\ac-hud-backend\collector\obj\Debug\net8.0-windows\AcTelemetryCollector.dll
+D:\code\ac-hud-backend\collector\obj\Debug\net8.0-windows\refint\AcTelemetryCollector.dll
+D:\code\ac-hud-backend\collector\obj\Debug\net8.0-windows\AcTelemetryCollector.pdb
+D:\code\ac-hud-backend\collector\obj\Debug\net8.0-windows\AcTelemetryCollector.genruntimeconfig.cache
+D:\code\ac-hud-backend\collector\obj\Debug\net8.0-windows\ref\AcTelemetryCollector.dll

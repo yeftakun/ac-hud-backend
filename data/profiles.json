@@ -1,0 +1,508 @@
+[
+  {
+    "schemaVersion": 1,
+    "id": "profile_001",
+    "name": "GT3",
+    "canvas": {
+      "w": 960,
+      "h": 540,
+      "background": "#11151c",
+      "fontFamily": "AC Inter"
+    },
+    "widgets": [
+      {
+        "id": "w_rpm_bar",
+        "type": "rpm-bar",
+        "x": 231,
+        "y": 11,
+        "w": 497,
+        "h": 59,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "rpm",
+          "redlineDataKey": "redline",
+          "style": "lamp",
+          "fillDirection": "edge-to-center",
+          "segments": 16,
+          "zones": [
+            {
+              "upTo": 0.6,
+              "color": "#2ee66b"
+            },
+            {
+              "upTo": 0.85,
+              "color": "#ffd400"
+            },
+            {
+              "upTo": 1,
+              "color": "#ff3b30"
+            }
+          ]
+        }
+      },
+      {
+        "id": "w_activation",
+        "type": "activation-lights",
+        "x": 890,
+        "y": 102,
+        "w": 40,
+        "h": 180,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "lampCount": 4,
+          "priority": [
+            "abs",
+            "tc",
+            "pit"
+          ],
+          "states": {
+            "pit": {
+              "color": "#ffd400",
+              "blink": true,
+              "blinkMs": 400,
+              "dataKey": "pit.active"
+            },
+            "abs": {
+              "color": "#ff3b30",
+              "blink": false,
+              "dataKey": "abs.active"
+            },
+            "tc": {
+              "color": "#a855f7",
+              "blink": false,
+              "dataKey": "tc.active"
+            }
+          }
+        }
+      },
+      {
+        "id": "w_speed",
+        "type": "raw-value",
+        "x": 192,
+        "y": 152,
+        "w": 170,
+        "h": 80,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "speed",
+          "suffix": " km/h",
+          "fontSize": 48
+        }
+      },
+      {
+        "id": "w_gear",
+        "type": "raw-value",
+        "x": 217,
+        "y": 76,
+        "w": 100,
+        "h": 80,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "gear",
+          "fontSize": 56
+        }
+      },
+      {
+        "id": "w_delta",
+        "type": "raw-value",
+        "x": 330,
+        "y": 100,
+        "w": 170,
+        "h": 80,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "delta",
+          "showSign": true,
+          "decimals": 3,
+          "fontSize": 48
+        }
+      },
+      {
+        "id": "w_drs",
+        "type": "drs",
+        "x": 520,
+        "y": 100,
+        "w": 120,
+        "h": 80,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "drs.active",
+          "activeColor": "#2ee66b",
+          "inactiveColor": "#2a3340",
+          "label": "DRS"
+        }
+      },
+      {
+        "id": "w_current_lap",
+        "type": "stat-box",
+        "x": 674,
+        "y": 94,
+        "w": 200,
+        "h": 65,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "lap.current",
+          "variant": "long",
+          "label": "CURRENT LAP",
+          "unit": null,
+          "decimals": 3,
+          "format": "laptime"
+        }
+      },
+      {
+        "id": "w_engine_stats",
+        "type": "stat-group",
+        "x": 20,
+        "y": 210,
+        "w": 300,
+        "h": 150,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "rows": [
+            {
+              "dataKey": "engine.oilTemp",
+              "label": "OIL TEMP",
+              "unit": "°C"
+            },
+            {
+              "dataKey": "engine.oilPressure",
+              "label": "OIL PRESS",
+              "unit": "bar",
+              "decimals": 1
+            },
+            {
+              "dataKey": "engine.waterTemp",
+              "label": "WATER TEMP",
+              "unit": "°C"
+            },
+            {
+              "dataKey": "engine.waterPressure",
+              "label": "WATER PRESS",
+              "unit": "bar",
+              "decimals": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": "w_best_lap",
+        "type": "stat-box",
+        "x": 340,
+        "y": 210,
+        "w": 160,
+        "h": 65,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "lap.best",
+          "variant": "long",
+          "label": "BEST LAP",
+          "unit": null,
+          "decimals": 3,
+          "format": "laptime"
+        }
+      },
+      {
+        "id": "w_lap_counter",
+        "type": "stat-box",
+        "x": 510,
+        "y": 210,
+        "w": 130,
+        "h": 65,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#ff0000",
+          "labelColor": "#ff0000",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "lap.counter",
+          "variant": "short",
+          "label": "LAP",
+          "unit": null,
+          "decimals": 0
+        }
+      },
+      {
+        "id": "w_last_lap",
+        "type": "stat-box",
+        "x": 340,
+        "y": 290,
+        "w": 160,
+        "h": 65,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "lap.last",
+          "variant": "long",
+          "label": "LAST LAP",
+          "unit": null,
+          "decimals": 3,
+          "format": "laptime"
+        }
+      },
+      {
+        "id": "w_est_lap",
+        "type": "stat-box",
+        "x": 510,
+        "y": 290,
+        "w": 130,
+        "h": 65,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "lap.est",
+          "variant": "long",
+          "label": "EST LAP",
+          "unit": null,
+          "decimals": 3
+        }
+      },
+      {
+        "id": "w_position",
+        "type": "stat-box",
+        "x": 340,
+        "y": 370,
+        "w": 130,
+        "h": 65,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "rpm",
+          "variant": "short",
+          "label": "RPM",
+          "unit": null,
+          "decimals": 0
+        }
+      },
+      {
+        "id": "w_fuel",
+        "type": "stat-box",
+        "x": 490,
+        "y": 370,
+        "w": 130,
+        "h": 65,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "fuel",
+          "variant": "short",
+          "label": "FUEL",
+          "unit": "L",
+          "decimals": 1
+        }
+      },
+      {
+        "id": "w_abs",
+        "type": "stat-box",
+        "x": 340,
+        "y": 450,
+        "w": 100,
+        "h": 65,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "abs",
+          "variant": "short",
+          "label": "ABS",
+          "unit": null,
+          "decimals": 0
+        }
+      },
+      {
+        "id": "w_tc",
+        "type": "stat-box",
+        "x": 455,
+        "y": 450,
+        "w": 100,
+        "h": 65,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "tc",
+          "variant": "short",
+          "label": "TC",
+          "unit": null,
+          "decimals": 0
+        }
+      },
+      {
+        "id": "w_bb",
+        "type": "stat-box",
+        "x": 570,
+        "y": 450,
+        "w": 100,
+        "h": 65,
+        "zIndex": 3,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "dataKey": "bb",
+          "variant": "short",
+          "label": "BB",
+          "unit": "%",
+          "decimals": 1
+        }
+      },
+      {
+        "id": "w_tyres",
+        "type": "tyres",
+        "x": 761,
+        "y": 314,
+        "w": 148,
+        "h": 203,
+        "zIndex": 2,
+        "style": {
+          "boxBg": "#141820",
+          "boxBorder": "#2a3340",
+          "labelColor": "#a8b2c0",
+          "valueColor": "#ffffff"
+        },
+        "payload": {
+          "positions": [
+            "FL",
+            "FR",
+            "RL",
+            "RR"
+          ],
+          "dataKeys": {
+            "FL": {
+              "psi": "tyres.FL.psi",
+              "temp": "tyres.FL.temp"
+            },
+            "FR": {
+              "psi": "tyres.FR.psi",
+              "temp": "tyres.FR.temp"
+            },
+            "RL": {
+              "psi": "tyres.RL.psi",
+              "temp": "tyres.RL.temp"
+            },
+            "RR": {
+              "psi": "tyres.RR.psi",
+              "temp": "tyres.RR.temp"
+            }
+          },
+          "tempThresholds": {
+            "cold": 70,
+            "optimal": 95,
+            "hot": 110
+          }
+        }
+      },
+      {
+        "id": "ov_pit_limiter",
+        "type": "overlay-event",
+        "x": 250,
+        "y": 190,
+        "w": 460,
+        "h": 100,
+        "zIndex": 100,
+        "style": {
+          "boxBg": "rgba(0, 0, 0, 0.85)",
+          "boxBorder": "#ffd400",
+          "labelColor": "#ffd400",
+          "valueColor": "#ffd400"
+        },
+        "payload": {
+          "triggerKey": "pit.active",
+          "triggerWhen": true,
+          "label": "PIT LIMITER",
+          "coverage": "partial",
+          "persistWhileActive": true,
+          "autoDismissMs": null,
+          "transition": "fade",
+          "transitionMs": 250
+        }
+      }
+    ]
+  }
+]

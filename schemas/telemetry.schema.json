@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ac-hud.local/schemas/telemetry.schema.json",
+  "title": "AC HUD flat telemetry",
+  "description": "Flat dot-notation telemetry payload shared by the collector and frontend.",
+  "type": "object",
+  "additionalProperties": {
+    "type": ["number", "boolean", "string", "null"]
+  }
+}
