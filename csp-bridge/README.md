@@ -47,11 +47,12 @@ driver HUD saat ini.
 
 ## Konfigurasi backend lain
 
-Jika backend tidak berjalan di PC yang sama, ubah konstanta `BACKEND_URL` di
-baris atas `ac_hud_csp_bridge.py`, misalnya:
+Jika backend tidak berjalan di PC yang sama, ubah konstanta berikut di bagian
+atas `ac_hud_csp_bridge.py`, misalnya:
 
 ```python
-BACKEND_URL = "http://10.169.143.2:3001/telemetry/patch"
+BACKEND_HOST = "10.169.143.2"
+BACKEND_PORT = 3001
 ```
 
 Pastikan Windows Firewall mengizinkan port `3001`.
