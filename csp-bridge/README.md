@@ -19,6 +19,17 @@ level ABS/TC setup atau heuristik slip. `abs` dan `tc` berasal dari state
 setting yang dibaca CSP. Oil/water sengaja tidak dikirim karena bukan prioritas
 driver HUD saat ini.
 
+Bridge menulis payload ke file lokal karena Python embedded CSP pada instalasi
+ini tidak menyediakan modul `socket`:
+
+```text
+C:\Users\<user>\Documents\Assetto Corsa\cfg\ac_hud_csp_patch.json
+```
+
+Backend membaca file tersebut setiap sekitar 33 ms. Patch dianggap stale
+setelah `CSP_FRESH_MS` (default 1500 ms), sehingga status tidak tertinggal jika
+AC atau app berhenti.
+
 ## Instalasi manual
 
 1. Pastikan backend AC HUD berjalan di PC yang sama:
@@ -45,21 +56,9 @@ driver HUD saat ini.
 5. Biarkan collector .NET tetap berjalan seperti biasa. Bridge ini hanya
    mengirim field tambahan; ia tidak menggantikan collector.
 
-## Konfigurasi backend lain
-
-Jika backend tidak berjalan di PC yang sama, ubah konstanta berikut di bagian
-atas `ac_hud_csp_bridge.py`, misalnya:
-
-```python
-BACKEND_HOST = "10.169.143.2"
-BACKEND_PORT = 3001
-```
-
-Pastikan Windows Firewall mengizinkan port `3001`.
-
 ## Cara menguji
 
-- Saat app aktif, label berubah menjadi `CSP bridge: connected`.
+- Saat app aktif, label berubah menjadi `CSP bridge: file active`.
 - Tekan rem atau gas sampai CSP benar-benar mengintervensi ABS/TC.
 - `abs.active`/`tc.active` di HUD akan mengikuti status intervensi.
 - Jika bridge dihentikan, backend akan menandai patch stale setelah TTL dan

@@ -1,5 +1,5 @@
 import { createServer } from "node:http";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -8,6 +8,9 @@ const PORT = Number(process.env.PORT ?? 3001);
 const DATA_FILE = resolve(ROOT, "data/profiles.json");
 const CAPTURE_FILE = resolve(ROOT, "data/capture.json");
 const CSP_FRESH_MS = Number(process.env.CSP_FRESH_MS ?? 1500);
+const CSP_PATCH_FILE = process.env.AC_HUD_CSP_PATCH_FILE
+  ?? resolve(process.env.USERPROFILE ?? "C:/Users/yefta", "Documents", "Assetto Corsa", "cfg", "ac_hud_csp_patch.json");
+const CSP_FILE_POLL_MS = Number(process.env.CSP_FILE_POLL_MS ?? 33);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,6 +24,8 @@ let standardTelemetry = null;
 let cspTelemetry = {};
 let cspUpdatedAt = 0;
 let cspExpiryTimer = null;
+let cspFilePollTimer = null;
+let cspFileMtime = 0;
 
 function sendJson(response, statusCode, body) {
   response.writeHead(statusCode, {
@@ -121,6 +126,28 @@ function scheduleCspExpiry() {
     if (!isCspFresh()) publishMergedTelemetry();
   }, CSP_FRESH_MS + 25);
   cspExpiryTimer.unref?.();
+}
+
+async function pollCspPatchFile() {
+  try {
+    const fileInfo = await stat(CSP_PATCH_FILE);
+    if (fileInfo.mtimeMs <= cspFileMtime) return;
+
+    const patch = JSON.parse(await readFile(CSP_PATCH_FILE, "utf8"));
+    const validationError = validateTelemetry(patch);
+    if (validationError) throw new Error(validationError);
+
+    await ensureTelemetryInitialized();
+    cspTelemetry = { ...cspTelemetry, ...patch };
+    cspUpdatedAt = Date.now();
+    cspFileMtime = fileInfo.mtimeMs;
+    scheduleCspExpiry();
+    publishMergedTelemetry();
+  } catch (error) {
+    if (error?.code !== "ENOENT" && error?.code !== "EACCES") {
+      console.warn(`CSP patch file ignored: ${error instanceof Error ? error.message : error}`);
+    }
+  }
 }
 
 function broadcastTelemetry(telemetry) {
@@ -304,4 +331,9 @@ const server = createServer(async (request, response) => {
 
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`AC HUD backend listening on http://0.0.0.0:${PORT}`);
+  cspFilePollTimer = setInterval(() => {
+    void pollCspPatchFile();
+  }, CSP_FILE_POLL_MS);
+  cspFilePollTimer.unref?.();
+  console.log(`CSP patch file: ${CSP_PATCH_FILE}`);
 });

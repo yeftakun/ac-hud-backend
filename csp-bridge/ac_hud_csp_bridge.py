@@ -1,38 +1,25 @@
-"""AC HUD CSP bridge.
+"""AC HUD CSP bridge using a local patch file.
 
-Install this file as an Assetto Corsa Python app.  It reads the player car's
-ABS/TC state from CSP and sends a small flat patch to AC HUD's backend.  The
-normal shared-memory collector remains the source for the rest of telemetry.
-
-The app intentionally does not read oil/water data.  Those fields are not
-important for the current driver HUD and vary more between cars than ABS/TC.
+The CSP Python runtime on this installation does not expose the socket module,
+so the app writes only the supplemental ABS/TC values to a shared JSON file.
+The AC HUD backend watches that file and merges it with normal shared-memory
+telemetry.
 """
 
+import ac
 import json
-import socket
-import threading
 import time
 
-import ac
 
 APP_NAME = "AC HUD Bridge"
-BACKEND_HOST = "127.0.0.1"
-BACKEND_PORT = 3001
-BACKEND_PATH = "/telemetry/patch"
+PATCH_FILE = r"C:\Users\yefta\Documents\Assetto Corsa\cfg\ac_hud_csp_patch.json"
 PUBLISH_INTERVAL_SECONDS = 0.033
-HTTP_TIMEOUT_SECONDS = 0.25
 
 app_window = None
 status_label = None
-worker_thread = None
-stop_event = threading.Event()
-patch_event = threading.Event()
-patch_lock = threading.Lock()
-pending_patch = None
-state_lock = threading.Lock()
-last_success_at = 0.0
-last_error = ""
 update_accumulator = 0.0
+last_write_at = 0.0
+last_error = ""
 
 
 def read_csp_value(function_name):
@@ -68,93 +55,35 @@ def read_patch():
     return patch
 
 
-def enqueue_latest(patch):
-    global pending_patch
-    with patch_lock:
-        pending_patch = patch
-    patch_event.set()
+def write_patch(patch):
+    global last_write_at, last_error
 
-
-def send_patch(patch):
-    body = json.dumps(patch).encode("utf-8")
-    headers = (
-        "POST " + BACKEND_PATH + " HTTP/1.1\r\n"
-        "Host: " + BACKEND_HOST + ":" + str(BACKEND_PORT) + "\r\n"
-        "Content-Type: application/json\r\n"
-        "Content-Length: " + str(len(body)) + "\r\n"
-        "Connection: close\r\n\r\n"
-    ).encode("ascii")
-
-    connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    connection.settimeout(HTTP_TIMEOUT_SECONDS)
+    handle = None
     try:
-        connection.connect((BACKEND_HOST, BACKEND_PORT))
-        connection.sendall(headers + body)
-        connection.recv(256)
-    finally:
-        connection.close()
-
-
-def publish_worker():
-    global last_success_at, last_error, pending_patch
-
-    while not stop_event.is_set():
-        patch_event.wait(0.5)
-        if stop_event.is_set():
-            break
-        with patch_lock:
-            patch = pending_patch
-            pending_patch = None
-            patch_event.clear()
-        if patch is None:
-            continue
-
-        try:
-            send_patch(patch)
-            with state_lock:
-                last_success_at = time.time()
-                last_error = ""
-        except Exception as error:
-            with state_lock:
-                last_error = str(error)
-
-
-def start_worker():
-    global worker_thread, stop_event, patch_event, pending_patch
-
-    stop_event = threading.Event()
-    patch_event = threading.Event()
-    pending_patch = None
-    worker_thread = threading.Thread(target=publish_worker)
-    worker_thread.daemon = True
-    worker_thread.start()
-
-
-def stop_worker():
-    global worker_thread
-
-    stop_event.set()
-    patch_event.set()
-
-    if worker_thread is not None and worker_thread.is_alive():
-        worker_thread.join(0.5)
-    worker_thread = None
+        handle = open(PATCH_FILE, "w")
+        handle.write(json.dumps(patch))
+        handle.close()
+        last_write_at = time.time()
+        last_error = ""
+    except Exception as error:
+        if handle is not None:
+            try:
+                handle.close()
+            except Exception:
+                pass
+        last_error = str(error)
 
 
 def update_status():
     if status_label is None:
         return
 
-    with state_lock:
-        success_at = last_success_at
-        error = last_error
-
-    if success_at > 0 and time.time() - success_at < 2.0:
-        status = "CSP bridge: connected"
-    elif error:
-        status = "CSP bridge: retrying"
+    if last_write_at > 0 and time.time() - last_write_at < 2.0:
+        status = "CSP bridge: file active"
+    elif last_error:
+        status = "CSP bridge: file error"
     else:
-        status = "CSP bridge: waiting"
+        status = "CSP bridge: starting"
 
     ac.setText(status_label, status)
 
@@ -168,7 +97,6 @@ def acMain(ac_version):
     ac.setBackgroundOpacity(app_window, 0.65)
     status_label = ac.addLabel(app_window, "CSP bridge: starting")
     ac.setPosition(status_label, 8, 10)
-    start_worker()
     return APP_NAME
 
 
@@ -180,14 +108,14 @@ def acUpdate(delta_t):
         update_accumulator = 0.0
         patch = read_patch()
         if patch:
-            enqueue_latest(patch)
+            write_patch(patch)
 
     update_status()
 
 
 def acShutdown():
-    stop_worker()
+    pass
 
 
 def ext_acReload():
-    stop_worker()
+    pass
