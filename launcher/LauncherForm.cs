@@ -314,7 +314,7 @@ internal sealed class LauncherForm : Form
         }
         args.Cancel = true;
         Hide();
-        trayIcon.ShowBalloonTip(1500, "AC Display Unit", "Berjalan di system tray.", ToolTipIcon.Info);
+        trayIcon.ShowBalloonTip(1500, "AC Display Unit", "Running in the system tray.", ToolTipIcon.Info);
     }
 
     private async Task WaitForBackendAsync(string healthUrl, CancellationToken cancellationToken)
