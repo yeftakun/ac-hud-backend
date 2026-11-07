@@ -1,74 +1,86 @@
 # AC HUD Backend
 
-Backend terpisah untuk AC HUD. Repo ini memiliki tiga tanggung jawab:
+Separate backend and Windows runtime for the AC HUD. The frontend source is in
+the companion repository [`ac-hud`](../ac-hud). This repository has three main
+responsibilities:
 
-1. Config API untuk profile layout.
-2. Telemetry ingest dan broadcast realtime melalui SSE.
-3. Boundary collector untuk membaca telemetry Assetto Corsa original.
+1. Config API for layout profiles.
+2. Telemetry ingest and realtime SSE broadcast.
+3. The collector boundary for Assetto Corsa original shared memory.
 
-## Menjalankan
+## Development server
 
 ```powershell
 npm install
 npm start
 ```
 
-Default server:
+The default server runs at:
 
 ```text
 http://localhost:3001
 ```
 
-Mode development dengan Node watch:
+Node watch mode:
 
 ```powershell
 npm run dev
 ```
 
-## Production bundle Windows
+## Windows production bundle
 
-Frontend production dapat disatukan dengan backend dan collector menjadi satu
-launcher. Script ini membangun React, mem-publish collector .NET self-contained,
-menyertakan runtime Node, lalu menghasilkan bundle portable:
+The frontend from the companion `ac-hud` repository can be bundled with the
+backend and collector into one portable Windows application. The script builds
+the frontend, publishes the self-contained .NET collector, includes Node.js,
+copies branding assets, and produces the launcher:
 
 ```powershell
 .\tools\build-production.ps1
 ```
 
-Hasilnya berada di `release\`. Jalankan satu file berikut:
+The result is written to `release\`. Run this single file:
 
 ```powershell
 .\release\AcHud.exe
 ```
 
-Launcher otomatis menjalankan API backend, menyajikan frontend hasil build, dan
-menjalankan `AcTelemetryCollector.exe`. Launcher sekarang berupa aplikasi Windows
-dengan window konfigurasi dan system tray. Menutup window akan memindahkannya ke
-tray secara default; gunakan menu tray `Exit` untuk benar-benar menghentikan
-backend dan collector.
+The launcher starts the Config/telemetry API, serves the frontend build, and
+starts `AcTelemetryCollector.exe`. It is a Windows configuration application
+with a system tray icon. Only one launcher instance is allowed; a second launch
+shows an alert and exits. The `Exit` action stops the collector and backend
+process tree and waits for them to terminate before closing the window.
 
-Window launcher menyediakan:
+By default, closing the window moves it to the tray. Use tray `Exit` for a full
+shutdown, or disable `Close window to system tray` in the settings. The launcher
+provides `Open Home` and `Open Display` shortcuts.
 
-- status backend dan collector;
+The launcher provides:
+
+- backend and collector status;
 - Start, Stop, Restart;
 - Open Display;
-- pengaturan port;
-- pilihan auto-start;
-- pilihan close-to-tray;
-- log proses backend dan collector.
+- port settings;
+- auto-start option;
+- close-to-tray option;
+- backend and collector logs;
+- `Open Home` and `Open Display` shortcuts.
 
-Aplikasi dapat dibuka melalui:
+Branding assets are stored in [`assets`](assets). `assets/logo.ico` is embedded
+as the executable icon and used by the launcher window/tray. The frontend uses
+the PNG/favicon copies maintained in the frontend repository.
+
+The web application is available at:
 
 ```text
 http://localhost:3001
 http://<IPv4-laptop>:3001/display
 ```
 
-Pastikan Assetto Corsa berjalan sebelum atau sesudah launcher. Collector akan
-menunggu shared memory AC sampai tersedia. Untuk akses HP melalui Wi-Fi, izinkan
-port TCP `3001` pada Windows Firewall.
+Assetto Corsa may start before or after the launcher. The collector waits for AC
+shared memory to become available. For phone access over Wi-Fi, allow TCP port
+`3001` through Windows Firewall.
 
-## Endpoint
+## API endpoints
 
 ### Health
 
@@ -85,7 +97,7 @@ POST /configs
 PUT  /configs/:id
 ```
 
-Profile disimpan di `data/profiles.json`.
+Profiles are stored in `data/profiles.json`.
 
 ### Telemetry
 
@@ -97,9 +109,13 @@ POST /telemetry/patch
 GET  /telemetry/events
 ```
 
-`PUT /telemetry` dipakai oleh halaman data/debugger. `POST /telemetry/ingest` adalah endpoint yang disiapkan untuk collector Assetto Corsa. Keduanya memvalidasi payload flat dan membroadcast payload ke semua koneksi SSE.
+`PUT /telemetry` is used by the frontend data/debug page. `POST
+/telemetry/ingest` is used by the Assetto Corsa collector. Both validate flat
+payloads and broadcast snapshots to all SSE connections.
 
-`POST /telemetry/patch` disediakan untuk sumber tambahan seperti bridge Custom Shaders Patch (CSP). Payload-nya flat dan hanya perlu berisi field yang disediakan sumber tambahan, misalnya:
+`POST /telemetry/patch` is provided for additional sources such as the Custom
+Shaders Patch (CSP) bridge. Its payload is flat and only needs to contain fields
+provided by the additional source, for example:
 
 ```json
 {
@@ -112,56 +128,76 @@ GET  /telemetry/events
 }
 ```
 
-Backend menggabungkan `POST /telemetry/ingest` sebagai state utama dengan patch CSP. Selama patch CSP masih menerima update dalam `CSP_FRESH_MS` (default 1500 ms), field patch menimpa field dengan key yang sama. Jika bridge berhenti mengirim, backend otomatis kembali ke state collector utama dan mengirim snapshot SSE baru. Frontend tetap hanya membaca satu snapshot telemetry.
+The backend combines collector state with CSP patches. While a CSP patch has
+received an update within `CSP_FRESH_MS` (default 1500 ms), matching patch keys
+override collector keys. If the bridge stops sending, the backend returns to
+collector state and broadcasts a fresh snapshot. The frontend still reads one
+flat telemetry snapshot.
 
-TTL dapat diubah saat menjalankan backend:
+The patch TTL can be changed when starting the backend:
 
 ```powershell
 $env:CSP_FRESH_MS = "1000"
 npm start
 ```
 
-Telemetry disimpan di memori. Restart backend mengembalikan baseline dari `data/capture.json`.
+Telemetry is stored in memory. Restarting the backend restores the baseline from
+`data/capture.json`.
 
-## Uji cepat
+## Quick test
 
 ```powershell
 Invoke-WebRequest http://localhost:3001/health -UseBasicParsing
 Invoke-WebRequest http://localhost:3001/configs -UseBasicParsing
 ```
 
-Kirim telemetry dummy:
+Send dummy telemetry:
 
 ```powershell
 $body = '{"speed":210,"rpm":6200,"gear":5,"pit.active":false}'
 Invoke-WebRequest http://localhost:3001/telemetry/ingest -Method Post -ContentType 'application/json' -Body $body
 ```
 
-Kirim patch sumber tambahan:
+Send an additional-source patch:
 
 ```powershell
 $patch = '{"abs.active":true,"tc.active":false,"engine.oilTemp":104.2}'
 Invoke-WebRequest http://localhost:3001/telemetry/patch -Method Post -ContentType 'application/json' -Body $patch
 ```
 
-Tes SSE dengan curl:
+Test SSE with curl:
 
 ```powershell
 curl.exe --no-buffer http://localhost:3001/telemetry/events
 ```
 
-Request SSE yang tetap `pending` adalah perilaku normal.
+An SSE request remaining `pending` is normal.
 
-## Integrasi frontend
+## Frontend integration
 
-Frontend `ac-hud` nantinya diarahkan ke host backend ini. Untuk akses dari HP, backend harus listen pada `0.0.0.0` dan firewall Windows harus mengizinkan port `3001`.
+The companion frontend repository [`ac-hud`](../ac-hud) points to this backend
+on port `3001`. For phone access, the backend listens on `0.0.0.0` and Windows
+Firewall must allow TCP port `3001`.
 
-Frontend tidak perlu mengetahui apakah telemetry berasal dari halaman `/data` atau collector AC. Keduanya harus menghasilkan schema telemetry flat yang sama.
+The frontend does not need to know whether telemetry comes from `/data` or the
+AC collector. Both sources must produce the same flat telemetry schema.
 
-## Collector Assetto Corsa
+## Assetto Corsa collector
 
-Rencana collector berada di [`collector/README.md`](collector/README.md). AC original menyediakan shared memory physics, graphics, dan static. Collector akan membaca sumber tersebut, melakukan normalisasi, kemudian mengirim `POST /telemetry/ingest` ke server lokal.
+The collector plan and setup are documented in [`collector/README.md`](collector/README.md).
+AC original provides physics, graphics, and static shared memory. The collector
+reads and normalizes those sources, then sends `POST /telemetry/ingest` locally.
 
-Bridge CSP belum dipaksa masuk ke collector shared-memory utama. Ia cukup mengirim field yang tidak tersedia atau tidak akurat dari shared memory standar ke `POST /telemetry/patch` secara berkala. Dokumentasi resmi CSP memang menyediakan input `ABS_INACTION`, `TRACTIONCONTROL_INACTION`, `OIL_TEMPERATURE`, dan `OIL_PRESSURE`, tetapi cara mengambilnya ke proses Windows eksternal tetap perlu disesuaikan dengan versi CSP, mode Content Manager, dan mobil yang dipakai. API sumbernya harus divalidasi pada instalasi pengguna sebelum dibuat adapter permanen.
+The CSP bridge is kept separate from the main shared-memory collector. It sends
+fields that are unavailable or inaccurate in standard shared memory to
+`POST /telemetry/patch`. Official CSP inputs include `ABS_INACTION`,
+`TRACTIONCONTROL_INACTION`, `OIL_TEMPERATURE`, and `OIL_PRESSURE`, but the
+external Windows adapter depends on the installed CSP version, Content Manager
+mode, and car. The source API should be validated on the target installation
+before making the adapter permanent.
 
-Adapter Python App yang siap dicoba tersedia di [`csp-bridge/README.md`](csp-bridge/README.md). Karena Python embedded CSP pada instalasi ini tidak menyediakan `socket`, adapter menulis patch ke file lokal yang dipoll backend. Adapter ini memprioritaskan state intervensi ABS/TC dan level setting ABS/TC, tanpa mengubah collector utama.
+The ready-to-test Python app adapter is documented in
+[`csp-bridge/README.md`](csp-bridge/README.md). Because embedded CSP Python on
+this installation does not provide `socket`, the adapter writes patches to a
+local file polled by the backend. It prioritizes ABS/TC intervention state and
+ABS/TC level settings without changing the main collector.
