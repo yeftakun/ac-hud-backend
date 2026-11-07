@@ -8,5 +8,13 @@
     <AssemblyName>AcHud</AssemblyName>
     <RootNamespace>AcHudLauncher</RootNamespace>
     <ApplicationIcon>..\assets\logo.ico</ApplicationIcon>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <InformationalVersion>1.0.0</InformationalVersion>
+    <Company>Yefta Asyel</Company>
+    <Product>AC Display Unit</Product>
+    <Description>Assetto Corsa telemetry display and HUD editor.</Description>
+    <Copyright>Copyright © 2026 Yefta Asyel</Copyright>
   </PropertyGroup>
 </Project>

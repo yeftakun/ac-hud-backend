@@ -11,19 +11,24 @@ internal sealed class LauncherSettings
     public int Port { get; set; } = 3001;
     public bool AutoStart { get; set; } = true;
     public bool CloseToTray { get; set; } = true;
+    public string AssettoCorsaPath { get; set; } = "";
 }
 
 internal sealed class LauncherForm : Form
 {
     private readonly string bundleRoot = AppContext.BaseDirectory;
+    private readonly string appDataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AcHud");
     private readonly string settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AcHud", "config.json");
+    private readonly string logFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AcHud", "logs", "application.log");
+    private readonly object logLock = new();
     private readonly JsonSerializerOptions jsonOptions = new() { WriteIndented = true };
     private readonly NotifyIcon trayIcon;
     private readonly Label statusLabel;
-    private readonly TextBox logBox;
     private readonly NumericUpDown portField;
     private readonly CheckBox autoStartField;
     private readonly CheckBox closeToTrayField;
+    private readonly TextBox assettoCorsaPathField;
+    private readonly Label bridgeStatusLabel;
     private readonly Button startButton;
     private readonly Button stopButton;
     private readonly Button restartButton;
@@ -43,8 +48,11 @@ internal sealed class LauncherForm : Form
         appIcon = LoadAppIcon();
         Icon = appIcon;
         StartPosition = FormStartPosition.CenterScreen;
-        MinimumSize = new Size(680, 460);
-        Size = new Size(760, 560);
+        FormBorderStyle = FormBorderStyle.FixedSingle;
+        MaximizeBox = false;
+        MinimumSize = new Size(900, 560);
+        MaximumSize = new Size(900, 560);
+        Size = new Size(900, 560);
         Font = new Font("Segoe UI", 9F);
         BackColor = Color.FromArgb(18, 22, 29);
         ForeColor = Color.White;
@@ -53,17 +61,9 @@ internal sealed class LauncherForm : Form
         portField = new NumericUpDown { Minimum = 1024, Maximum = 65535, Value = settings.Port, Width = 110 };
         autoStartField = new CheckBox { Text = "Start services automatically", Checked = settings.AutoStart, AutoSize = true };
         closeToTrayField = new CheckBox { Text = "Close window to system tray", Checked = settings.CloseToTray, AutoSize = true };
+        assettoCorsaPathField = new TextBox { Text = settings.AssettoCorsaPath, Width = 300 };
+        bridgeStatusLabel = new Label { AutoSize = true, Margin = new Padding(8, 7, 0, 0) };
         statusLabel = new Label { Text = "Stopped", AutoSize = true, ForeColor = Color.LightGray, Margin = new Padding(0, 7, 0, 0) };
-        logBox = new TextBox
-        {
-            Multiline = true,
-            ReadOnly = true,
-            ScrollBars = ScrollBars.Vertical,
-            Dock = DockStyle.Fill,
-            BackColor = Color.FromArgb(10, 13, 18),
-            ForeColor = Color.FromArgb(207, 218, 230),
-            Font = new Font("Consolas", 9F),
-        };
 
         startButton = MakeButton("Start", StartServicesAsync);
         stopButton = MakeButton("Stop", StopServicesAsync);
@@ -112,7 +112,16 @@ internal sealed class LauncherForm : Form
         settingsPanel.Controls.Add(autoStartField);
         settingsPanel.Controls.Add(closeToTrayField);
         settingsPanel.Controls.Add(MakeButton("Save settings", SaveSettings));
+        settingsPanel.Controls.Add(MakeButton("Open log", OpenLog));
         layout.Controls.Add(settingsPanel, 0, 2);
+
+        var assettoPanel = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, WrapContents = true, Margin = new Padding(0, 0, 0, 12) };
+        assettoPanel.Controls.Add(new Label { Text = "Assetto Corsa", AutoSize = true, ForeColor = Color.FromArgb(160, 174, 190), Margin = new Padding(0, 7, 8, 0) });
+        assettoPanel.Controls.Add(assettoCorsaPathField);
+        assettoPanel.Controls.Add(MakeButton("Browse…", BrowseAssettoCorsa));
+        assettoPanel.Controls.Add(MakeButton("Install / Update Bridge", InstallBridgeAsync));
+        assettoPanel.Controls.Add(bridgeStatusLabel);
+        layout.Controls.Add(assettoPanel, 0, 3);
 
         layout.Controls.Add(new Label
         {
@@ -120,9 +129,11 @@ internal sealed class LauncherForm : Form
             AutoSize = true,
             ForeColor = Color.FromArgb(139, 154, 172),
             Margin = new Padding(0, 0, 0, 10),
-        }, 0, 3);
-        layout.Controls.Add(logBox, 0, 4);
+        }, 0, 4);
         Controls.Add(layout);
+
+        assettoCorsaPathField.TextChanged += (_, _) => RefreshBridgeStatus();
+        RefreshBridgeStatus();
 
         trayIcon = new NotifyIcon
         {
@@ -170,6 +181,7 @@ internal sealed class LauncherForm : Form
         menu.Items.Add("Show AC Display Unit", null, (_, _) => ShowWindow());
         menu.Items.Add("Open Home", null, (_, _) => OpenHome());
         menu.Items.Add("Open Display", null, (_, _) => OpenDisplay());
+        menu.Items.Add("Open log", null, (_, _) => OpenLog());
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("Start", null, async (_, _) => await StartServicesAsync());
         menu.Items.Add("Stop", null, async (_, _) => await StopServicesAsync());
@@ -195,10 +207,127 @@ internal sealed class LauncherForm : Form
 
     private Task SaveSettings()
     {
-        var settings = new LauncherSettings { Port = (int)portField.Value, AutoStart = autoStartField.Checked, CloseToTray = closeToTrayField.Checked };
-        Directory.CreateDirectory(Path.GetDirectoryName(settingsPath)!);
+        var settings = new LauncherSettings
+        {
+            Port = (int)portField.Value,
+            AutoStart = autoStartField.Checked,
+            CloseToTray = closeToTrayField.Checked,
+            AssettoCorsaPath = assettoCorsaPathField.Text.Trim(),
+        };
+        Directory.CreateDirectory(appDataDirectory);
         File.WriteAllText(settingsPath, JsonSerializer.Serialize(settings, jsonOptions));
         AppendLog("Settings saved. Restart services to apply a changed port.");
+        return Task.CompletedTask;
+    }
+
+    private Task OpenLog()
+    {
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath)!);
+            if (!File.Exists(logFilePath)) File.WriteAllText(logFilePath, "");
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = logFilePath,
+                UseShellExecute = true,
+            });
+        }
+        catch (Exception error)
+        {
+            MessageBox.Show(this, error.Message, "Application log", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task BrowseAssettoCorsa()
+    {
+        using var dialog = new FolderBrowserDialog
+        {
+            Description = "Select the Assetto Corsa installation folder",
+            UseDescriptionForTitle = true,
+            SelectedPath = Directory.Exists(assettoCorsaPathField.Text)
+                ? assettoCorsaPathField.Text
+                : string.Empty,
+            ShowNewFolderButton = false,
+        };
+
+        if (dialog.ShowDialog(this) == DialogResult.OK)
+        {
+            assettoCorsaPathField.Text = dialog.SelectedPath;
+            AppendLog($"Assetto Corsa folder selected: {dialog.SelectedPath}");
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private string GetBridgeTargetPath()
+    {
+        return Path.Combine(
+            assettoCorsaPathField.Text.Trim(),
+            "apps",
+            "python",
+            "ac_hud_csp_bridge",
+            "ac_hud_csp_bridge.py");
+    }
+
+    private void RefreshBridgeStatus()
+    {
+        if (IsDisposed) return;
+
+        var selectedPath = assettoCorsaPathField.Text.Trim();
+        if (string.IsNullOrWhiteSpace(selectedPath))
+        {
+            bridgeStatusLabel.Text = "Not configured";
+            bridgeStatusLabel.ForeColor = Color.LightGray;
+            return;
+        }
+
+        if (!Directory.Exists(selectedPath))
+        {
+            bridgeStatusLabel.Text = "Installation folder not found";
+            bridgeStatusLabel.ForeColor = Color.IndianRed;
+            return;
+        }
+
+        var bridgePath = GetBridgeTargetPath();
+        var installed = File.Exists(bridgePath);
+        bridgeStatusLabel.Text = installed ? "Bridge installed" : "Bridge not installed";
+        bridgeStatusLabel.ForeColor = installed ? Color.FromArgb(151, 232, 105) : Color.Gold;
+    }
+
+    private Task InstallBridgeAsync()
+    {
+        var selectedPath = assettoCorsaPathField.Text.Trim();
+        var sourcePath = Path.Combine(bundleRoot, "csp-bridge", "ac_hud_csp_bridge.py");
+
+        try
+        {
+            if (!Directory.Exists(selectedPath))
+            {
+                throw new InvalidOperationException("Select a valid Assetto Corsa installation folder first.");
+            }
+
+            if (!File.Exists(sourcePath))
+            {
+                throw new InvalidOperationException("The bundled CSP bridge is missing. Rebuild the production bundle.");
+            }
+
+            var targetPath = GetBridgeTargetPath();
+            Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
+            File.Copy(sourcePath, targetPath, overwrite: true);
+            SaveSettings();
+            RefreshBridgeStatus();
+            AppendLog($"CSP bridge installed: {targetPath}");
+        }
+        catch (Exception error)
+        {
+            bridgeStatusLabel.Text = "Bridge install failed";
+            bridgeStatusLabel.ForeColor = Color.IndianRed;
+            AppendLog($"CSP bridge install failed: {error.Message}");
+            MessageBox.Show(this, error.Message, "CSP Bridge", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
         return Task.CompletedTask;
     }
 
@@ -401,9 +530,16 @@ internal sealed class LauncherForm : Form
 
     private void AppendLog(string message)
     {
-        if (IsDisposed) return;
-        if (InvokeRequired) { BeginInvoke(() => AppendLog(message)); return; }
-        logBox.AppendText($"[{DateTime.Now:HH:mm:ss}] {message}{Environment.NewLine}");
+        var line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}{Environment.NewLine}";
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath)!);
+            lock (logLock) File.AppendAllText(logFilePath, line);
+        }
+        catch
+        {
+            // Logging must never interrupt the launcher lifecycle.
+        }
     }
 
     protected override void Dispose(bool disposing)

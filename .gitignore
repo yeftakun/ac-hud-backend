@@ -3,6 +3,7 @@ node_modules/
 *.log
 __pycache__/
 release/
+artifacts/
 .build-production/
 publish/
 launcher/bin/

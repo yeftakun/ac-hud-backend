@@ -32,6 +32,12 @@ AC atau app berhenti.
 
 ## Instalasi manual
 
+Jika menggunakan production launcher, file bridge sudah ikut di bundle. Pilih
+folder instalasi Assetto Corsa pada launcher lalu tekan `Install / Update
+Bridge`; launcher akan menyalinnya ke folder Python Apps yang benar.
+
+Instalasi manual berikut hanya diperlukan jika launcher tidak digunakan:
+
 1. Pastikan backend AC HUD berjalan di PC yang sama:
 
    ```powershell

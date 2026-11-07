@@ -18,6 +18,7 @@ $BackendOutput = Join-Path $ReleaseRoot "backend"
 $CollectorOutput = Join-Path $ReleaseRoot "collector"
 $NodeOutput = Join-Path $ReleaseRoot "node"
 $AssetsOutput = Join-Path $ReleaseRoot "assets"
+$BridgeOutput = Join-Path $ReleaseRoot "csp-bridge"
 
 Write-Host "Building frontend..."
 & npm --prefix $FrontendDir run build
@@ -25,7 +26,7 @@ if ($LASTEXITCODE -ne 0) { throw "Frontend build failed." }
 
 Remove-Item -LiteralPath $ReleaseRoot -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath $BuildRoot -Recurse -Force -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Force -Path $WebOutput, $BackendOutput, $CollectorOutput, $NodeOutput, $AssetsOutput, $BuildRoot | Out-Null
+New-Item -ItemType Directory -Force -Path $WebOutput, $BackendOutput, $CollectorOutput, $NodeOutput, $AssetsOutput, $BridgeOutput, $BuildRoot | Out-Null
 
 Write-Host "Publishing telemetry collector..."
 & dotnet publish (Join-Path $BackendRoot "collector\AcTelemetryCollector.csproj") `
@@ -45,6 +46,9 @@ Copy-Item -LiteralPath (Join-Path $BackendRoot "src") -Destination $BackendOutpu
 Copy-Item -LiteralPath (Join-Path $BackendRoot "data") -Destination $BackendOutput -Recurse -Force
 Copy-Item -LiteralPath (Join-Path $BackendRoot "package.json") -Destination $BackendOutput -Force
 Copy-Item -Path (Join-Path $BackendRoot "assets\*") -Destination $AssetsOutput -Recurse -Force
+Copy-Item -LiteralPath (Join-Path $BackendRoot "csp-bridge\ac_hud_csp_bridge.py") -Destination $BridgeOutput -Force
+Copy-Item -LiteralPath (Join-Path $BackendRoot "csp-bridge\README.md") -Destination $BridgeOutput -Force
+Copy-Item -LiteralPath (Join-Path $BackendRoot "LICENSE") -Destination (Join-Path $ReleaseRoot "LICENSE") -Force
 
 $nodeCommand = Get-Command node.exe -ErrorAction Stop
 Copy-Item -LiteralPath $nodeCommand.Source -Destination (Join-Path $NodeOutput "node.exe") -Force

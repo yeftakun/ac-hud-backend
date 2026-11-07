@@ -13,7 +13,17 @@ import time
 
 
 APP_NAME = "AC HUD Bridge"
-PATCH_FILE = r"C:\Users\yefta\Documents\Assetto Corsa\cfg\ac_hud_csp_patch.json"
+USER_PROFILE = os.environ.get("USERPROFILE") or os.path.expanduser("~")
+PATCH_FILE = os.environ.get(
+    "AC_HUD_CSP_PATCH_FILE",
+    os.path.join(
+        USER_PROFILE,
+        "Documents",
+        "Assetto Corsa",
+        "cfg",
+        "ac_hud_csp_patch.json",
+    ),
+)
 PUBLISH_INTERVAL_SECONDS = 0.033
 
 app_window = None
@@ -62,6 +72,7 @@ def write_patch(patch):
     temp_file = PATCH_FILE + ".tmp"
     handle = None
     try:
+        os.makedirs(os.path.dirname(PATCH_FILE), exist_ok=True)
         handle = open(temp_file, "w")
         handle.write(json.dumps(patch))
         handle.close()

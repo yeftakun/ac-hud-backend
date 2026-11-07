@@ -8,6 +8,21 @@ responsibilities:
 2. Telemetry ingest and realtime SSE broadcast.
 3. The collector boundary for Assetto Corsa original shared memory.
 
+## AC Display Unit v1.0.0
+
+AC Display Unit is developed and published by **Yefta Asyel** under the [MIT
+License](LICENSE).
+
+- Repository: <https://github.com/yeftakun/ac-hud>
+- Support: <yeftakun34@gmail.com>
+- Target: Windows x64
+- Runtime requirement: Assetto Corsa original with Content Manager and Custom
+  Shaders Patch; tested with CSP `0.2.11`.
+
+The CSP Python bridge is included in the release bundle, but installation into
+Assetto Corsa remains a manual action through the launcher so the user can
+select the correct AC installation folder.
+
 ## Development server
 
 ```powershell
@@ -44,6 +59,16 @@ The result is written to `release\`. Run this single file:
 .\release\AcHud.exe
 ```
 
+To create both release formats (`.zip` portable package and Windows installer):
+
+```powershell
+.\tools\package-release.ps1
+```
+
+The artifacts are written to `artifacts\`. The installer creates shortcuts and
+adds an inbound Windows Firewall rule for TCP port `3001` on private/domain
+networks. Uninstall removes that rule.
+
 The launcher starts the Config/telemetry API, serves the frontend build, and
 starts `AcTelemetryCollector.exe`. It is a Windows configuration application
 with a system tray icon. Only one launcher instance is allowed; a second launch
@@ -60,10 +85,30 @@ The launcher provides:
 - Start, Stop, Restart;
 - Open Display;
 - port settings;
+- Assetto Corsa installation path picker;
+- CSP bridge installation/status check;
 - auto-start option;
 - close-to-tray option;
-- backend and collector logs;
+- application logging to `%LOCALAPPDATA%\\AcHud\\logs\\application.log`;
 - `Open Home` and `Open Display` shortcuts.
+
+The launcher window does not show a raw console anymore. Backend, collector, and
+launcher messages are written to the application log. Use `Open log` in the
+window or the system-tray menu to open it.
+
+The production bundle also includes `csp-bridge\ac_hud_csp_bridge.py`. Select the
+Assetto Corsa installation folder in the launcher, then choose `Install / Update
+Bridge`. The launcher installs the bridge at the required location:
+
+```text
+<Assetto Corsa>\apps\python\ac_hud_csp_bridge\ac_hud_csp_bridge.py
+```
+
+After installation, enable `AC HUD Bridge` in Content Manager's Python Apps.
+The launcher only installs and checks the file; the Python app still runs inside
+Assetto Corsa. The bridge determines the current Windows user's Documents path
+automatically and writes the CSP patch to the same default location used by the
+backend.
 
 Branding assets are stored in [`assets`](assets). `assets/logo.ico` is embedded
 as the executable icon and used by the launcher window/tray. The frontend uses
