@@ -52,6 +52,9 @@ internal static class Program
     private static string? _lastVehicle;
     private static string? _lastTrack;
     private static int _lastRedline;
+    private static DateTime _nextBackendRetryAt = DateTime.MinValue;
+    private static bool _backendAvailable;
+    private static bool _backendFailureReported;
 
     private static async Task Main()
     {
@@ -280,10 +283,25 @@ internal static class Program
 
             if (connected)
             {
+                if (DateTime.UtcNow < _nextBackendRetryAt)
+                {
+                    await DelayPublish(intervalMs, cancellationToken);
+                    continue;
+                }
+
                 try
                 {
                     using var response = await Http.PostAsJsonAsync(backendUrl, SnapshotState(), cancellationToken);
-                    if (!response.IsSuccessStatusCode) Console.WriteLine($"Backend returned {(int)response.StatusCode}.");
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        MarkBackendUnavailable($"HTTP {(int)response.StatusCode}");
+                    }
+                    else if (!_backendAvailable)
+                    {
+                        _backendAvailable = true;
+                        _backendFailureReported = false;
+                        Console.WriteLine("Backend telemetry connection established.");
+                    }
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
@@ -291,18 +309,32 @@ internal static class Program
                 }
                 catch (Exception error)
                 {
-                    Console.WriteLine($"Backend publish failed: {error.Message}");
+                    MarkBackendUnavailable(error.Message);
                 }
             }
 
-            try
-            {
-                await Task.Delay(intervalMs, cancellationToken);
-            }
-            catch (OperationCanceledException)
-            {
-                break;
-            }
+            await DelayPublish(intervalMs, cancellationToken);
+        }
+    }
+
+    private static void MarkBackendUnavailable(string reason)
+    {
+        _backendAvailable = false;
+        _nextBackendRetryAt = DateTime.UtcNow.AddMilliseconds(250);
+        if (_backendFailureReported) return;
+        Console.WriteLine($"Backend unavailable; retrying automatically ({reason}).");
+        _backendFailureReported = true;
+    }
+
+    private static async Task DelayPublish(int intervalMs, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(intervalMs, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // The outer loop observes the cancellation on its next iteration.
         }
     }
 }

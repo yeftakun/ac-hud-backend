@@ -2,3 +2,10 @@ node_modules/
 .env
 *.log
 __pycache__/
+release/
+.build-production/
+publish/
+launcher/bin/
+launcher/obj/
+collector/bin/
+collector/obj/

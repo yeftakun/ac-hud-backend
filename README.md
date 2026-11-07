@@ -25,6 +25,49 @@ Mode development dengan Node watch:
 npm run dev
 ```
 
+## Production bundle Windows
+
+Frontend production dapat disatukan dengan backend dan collector menjadi satu
+launcher. Script ini membangun React, mem-publish collector .NET self-contained,
+menyertakan runtime Node, lalu menghasilkan bundle portable:
+
+```powershell
+.\tools\build-production.ps1
+```
+
+Hasilnya berada di `release\`. Jalankan satu file berikut:
+
+```powershell
+.\release\AcHud.exe
+```
+
+Launcher otomatis menjalankan API backend, menyajikan frontend hasil build, dan
+menjalankan `AcTelemetryCollector.exe`. Launcher sekarang berupa aplikasi Windows
+dengan window konfigurasi dan system tray. Menutup window akan memindahkannya ke
+tray secara default; gunakan menu tray `Exit` untuk benar-benar menghentikan
+backend dan collector.
+
+Window launcher menyediakan:
+
+- status backend dan collector;
+- Start, Stop, Restart;
+- Open Display;
+- pengaturan port;
+- pilihan auto-start;
+- pilihan close-to-tray;
+- log proses backend dan collector.
+
+Aplikasi dapat dibuka melalui:
+
+```text
+http://localhost:3001
+http://<IPv4-laptop>:3001/display
+```
+
+Pastikan Assetto Corsa berjalan sebelum atau sesudah launcher. Collector akan
+menunggu shared memory AC sampai tersedia. Untuk akses HP melalui Wi-Fi, izinkan
+port TCP `3001` pada Windows Firewall.
+
 ## Endpoint
 
 ### Health

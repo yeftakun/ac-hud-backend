@@ -1,12 +1,13 @@
 import { createServer } from "node:http";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { dirname, extname, isAbsolute, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const PORT = Number(process.env.PORT ?? 3001);
 const DATA_FILE = resolve(ROOT, "data/profiles.json");
 const CAPTURE_FILE = resolve(ROOT, "data/capture.json");
+const FRONTEND_DIR = resolve(process.env.AC_HUD_FRONTEND_DIR ?? resolve(ROOT, "..", "ac-hud", "dist"));
 const CSP_FRESH_MS = Number(process.env.CSP_FRESH_MS ?? 1500);
 const CSP_PATCH_FILE = process.env.AC_HUD_CSP_PATCH_FILE
   ?? resolve(process.env.USERPROFILE ?? "C:/Users/yefta", "Documents", "Assetto Corsa", "cfg", "ac_hud_csp_patch.json");
@@ -33,6 +34,55 @@ function sendJson(response, statusCode, body) {
     "Content-Type": "application/json; charset=utf-8",
   });
   response.end(JSON.stringify(body));
+}
+
+const frontendMimeTypes = {
+  ".css": "text/css; charset=utf-8",
+  ".html": "text/html; charset=utf-8",
+  ".ico": "image/x-icon",
+  ".js": "text/javascript; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".map": "application/json; charset=utf-8",
+  ".png": "image/png",
+  ".svg": "image/svg+xml",
+  ".ttf": "font/ttf",
+  ".webmanifest": "application/manifest+json; charset=utf-8",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+};
+
+async function serveFrontend(request, response, pathname) {
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    sendJson(response, 405, { error: "Method not allowed" });
+    return;
+  }
+
+  const requestedPath = decodeURIComponent(pathname === "/" ? "/index.html" : pathname);
+  const candidate = resolve(FRONTEND_DIR, `.${requestedPath}`);
+  const relativeCandidate = relative(FRONTEND_DIR, candidate);
+  const isInsideFrontend = relativeCandidate === ""
+    || (!relativeCandidate.startsWith("..") && !isAbsolute(relativeCandidate));
+  let filePath = isInsideFrontend ? candidate : resolve(FRONTEND_DIR, "index.html");
+
+  try {
+    const fileInfo = await stat(filePath);
+    if (!fileInfo.isFile()) throw new Error("Not a file");
+  } catch {
+    // Client-side routes such as /display and /editor need the SPA shell.
+    filePath = resolve(FRONTEND_DIR, "index.html");
+  }
+
+  try {
+    const body = await readFile(filePath);
+    const isShell = filePath.endsWith("index.html");
+    response.writeHead(200, {
+      "Content-Type": frontendMimeTypes[extname(filePath).toLowerCase()] ?? "application/octet-stream",
+      "Cache-Control": isShell ? "no-cache" : "public, max-age=31536000",
+    });
+    response.end(request.method === "HEAD" ? undefined : body);
+  } catch {
+    sendJson(response, 404, { error: "Frontend build not found" });
+  }
 }
 
 function isObject(value) {
@@ -133,7 +183,20 @@ async function pollCspPatchFile() {
     const fileInfo = await stat(CSP_PATCH_FILE);
     if (fileInfo.mtimeMs <= cspFileMtime) return;
 
-    const patch = JSON.parse(await readFile(CSP_PATCH_FILE, "utf8"));
+    let patch;
+    let lastParseError;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        patch = JSON.parse(await readFile(CSP_PATCH_FILE, "utf8"));
+        break;
+      } catch (error) {
+        lastParseError = error;
+        if (!(error instanceof SyntaxError) || attempt === 2) throw error;
+        await new Promise((resolvePromise) => setTimeout(resolvePromise, 10));
+      }
+    }
+
+    if (!patch) throw lastParseError ?? new Error("Empty CSP patch");
     const validationError = validateTelemetry(patch);
     if (validationError) throw new Error(validationError);
 
@@ -145,7 +208,11 @@ async function pollCspPatchFile() {
     publishMergedTelemetry();
   } catch (error) {
     if (error?.code !== "ENOENT" && error?.code !== "EACCES") {
-      console.warn(`CSP patch file ignored: ${error instanceof Error ? error.message : error}`);
+      // A CSP bridge may replace the file between stat and read. Keep the last
+      // valid patch and retry on the next poll without flooding the console.
+      if (!(error instanceof SyntaxError)) {
+        console.warn(`CSP patch file ignored: ${error instanceof Error ? error.message : error}`);
+      }
     }
   }
 }
@@ -262,7 +329,11 @@ const server = createServer(async (request, response) => {
     }
 
     if (parts[0] !== "configs" || parts.length > 2) {
-      sendJson(response, 404, { error: "Not found" });
+      if (parts[0] === "configs") {
+        sendJson(response, 404, { error: "Not found" });
+      } else {
+        await serveFrontend(request, response, url.pathname);
+      }
       return;
     }
 

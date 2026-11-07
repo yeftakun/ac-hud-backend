@@ -8,6 +8,7 @@ telemetry.
 
 import ac
 import json
+import os
 import time
 
 
@@ -58,11 +59,14 @@ def read_patch():
 def write_patch(patch):
     global last_write_at, last_error
 
+    temp_file = PATCH_FILE + ".tmp"
     handle = None
     try:
-        handle = open(PATCH_FILE, "w")
+        handle = open(temp_file, "w")
         handle.write(json.dumps(patch))
         handle.close()
+        handle = None
+        os.replace(temp_file, PATCH_FILE)
         last_write_at = time.time()
         last_error = ""
     except Exception as error:
@@ -71,6 +75,11 @@ def write_patch(patch):
                 handle.close()
             except Exception:
                 pass
+        try:
+            if os.path.exists(temp_file):
+                os.remove(temp_file)
+        except Exception:
+            pass
         last_error = str(error)
 
 
