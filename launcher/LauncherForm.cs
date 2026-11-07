@@ -30,8 +30,10 @@ internal sealed class LauncherForm : Form
     private readonly Button displayButton;
     private Process? backendProcess;
     private Process? collectorProcess;
+    private CancellationTokenSource? startupCancellation;
     private bool allowExit;
     private bool starting;
+    private bool shuttingDown;
 
     public LauncherForm()
     {
@@ -82,7 +84,7 @@ internal sealed class LauncherForm : Form
 
         layout.Controls.Add(new Label
         {
-            Text = "AC HUD  /  PRODUCTION CONTROL",
+            Text = "AC Display Unit",
             AutoSize = true,
             Font = new Font("Segoe UI", 15F, FontStyle.Bold),
             ForeColor = Color.FromArgb(188, 232, 105),
@@ -153,7 +155,7 @@ internal sealed class LauncherForm : Form
     private ContextMenuStrip BuildTrayMenu()
     {
         var menu = new ContextMenuStrip();
-        menu.Items.Add("Show AC HUD", null, (_, _) => ShowWindow());
+        menu.Items.Add("Show AC Display Unit", null, (_, _) => ShowWindow());
         menu.Items.Add("Open Display", null, (_, _) => OpenDisplay());
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("Start", null, async (_, _) => await StartServicesAsync());
@@ -189,8 +191,10 @@ internal sealed class LauncherForm : Form
 
     private async Task StartServicesAsync()
     {
-        if (starting || IsRunning(backendProcess)) return;
+        if (starting || shuttingDown || IsRunning(backendProcess)) return;
         starting = true;
+        startupCancellation = new CancellationTokenSource();
+        var startupToken = startupCancellation.Token;
         SetStatus("Starting backend…", Color.Gold);
         SetButtons(false, false, false);
         try
@@ -207,7 +211,9 @@ internal sealed class LauncherForm : Form
                 ["PORT"] = port.ToString(),
                 ["AC_HUD_FRONTEND_DIR"] = Path.Combine(bundleRoot, "web"),
             });
-            await WaitForBackendAsync($"http://127.0.0.1:{port}/health");
+            await WaitForBackendAsync($"http://127.0.0.1:{port}/health", startupToken);
+            startupToken.ThrowIfCancellationRequested();
+            if (shuttingDown) return;
 
             collectorProcess = StartProcess(collectorPath, Path.Combine(bundleRoot, "collector"), Array.Empty<string>(), new Dictionary<string, string>
             {
@@ -215,6 +221,10 @@ internal sealed class LauncherForm : Form
             });
             SetStatus("Running", Color.FromArgb(151, 232, 105));
             AppendLog("Production services started.");
+        }
+        catch (OperationCanceledException) when (startupToken.IsCancellationRequested || shuttingDown)
+        {
+            AppendLog("Startup canceled.");
         }
         catch (Exception error)
         {
@@ -227,8 +237,10 @@ internal sealed class LauncherForm : Form
         }
         finally
         {
+            startupCancellation?.Dispose();
+            startupCancellation = null;
             starting = false;
-            SetButtons(!IsRunning(backendProcess), IsRunning(backendProcess), IsRunning(backendProcess));
+            if (!shuttingDown) SetButtons(!IsRunning(backendProcess), IsRunning(backendProcess), IsRunning(backendProcess));
         }
     }
 
@@ -238,25 +250,34 @@ internal sealed class LauncherForm : Form
         await StartServicesAsync();
     }
 
-    private Task StopServicesAsync()
+    private async Task StopServicesAsync()
     {
-        StopProcess(collectorProcess);
-        StopProcess(backendProcess);
+        startupCancellation?.Cancel();
+        var collector = collectorProcess;
+        var backend = backendProcess;
         collectorProcess = null;
         backendProcess = null;
+
+        await StopProcessAsync(collector);
+        await StopProcessAsync(backend);
         SetStatus("Stopped", Color.LightGray);
-        SetButtons(true, false, false);
+        if (!shuttingDown) SetButtons(true, false, false);
         AppendLog("Production services stopped.");
-        return Task.CompletedTask;
     }
 
     private async Task ExitApplicationAsync()
     {
-        allowExit = true;
+        if (shuttingDown) return;
+        shuttingDown = true;
+        SetButtons(false, false, false);
+        SetStatus("Stopping services…", Color.Gold);
+
         await StopServicesAsync();
+
+        allowExit = true;
         trayIcon.Visible = false;
         trayIcon.Dispose();
-        Application.Exit();
+        Close();
     }
 
     private Task OpenDisplay()
@@ -274,13 +295,19 @@ internal sealed class LauncherForm : Form
 
     private void HandleFormClosing(object? sender, FormClosingEventArgs args)
     {
-        if (allowExit || !closeToTrayField.Checked) return;
+        if (allowExit) return;
+        if (!closeToTrayField.Checked)
+        {
+            args.Cancel = true;
+            _ = ExitApplicationAsync();
+            return;
+        }
         args.Cancel = true;
         Hide();
         trayIcon.ShowBalloonTip(1500, "AC Display Unit", "Berjalan di system tray.", ToolTipIcon.Info);
     }
 
-    private async Task WaitForBackendAsync(string healthUrl)
+    private async Task WaitForBackendAsync(string healthUrl, CancellationToken cancellationToken)
     {
         using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(1) };
         var deadline = DateTime.UtcNow.AddSeconds(30);
@@ -288,12 +315,12 @@ internal sealed class LauncherForm : Form
         {
             try
             {
-                using var response = await client.GetAsync(healthUrl);
+                using var response = await client.GetAsync(healthUrl, cancellationToken);
                 if (response.IsSuccessStatusCode) { AppendLog("Backend health check passed."); return; }
             }
             catch (HttpRequestException) { }
-            catch (TaskCanceledException) { }
-            await Task.Delay(200);
+            catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested) { }
+            await Task.Delay(200, cancellationToken);
         }
         throw new InvalidOperationException("Backend did not become ready within 30 seconds.");
     }
@@ -370,5 +397,28 @@ internal sealed class LauncherForm : Form
             StopProcess(backendProcess);
         }
         base.Dispose(disposing);
+    }
+
+    private static async Task StopProcessAsync(Process? process)
+    {
+        if (process is null) return;
+        try
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+                try { await process.WaitForExitAsync(timeout.Token); }
+                catch (OperationCanceledException) { }
+
+                if (!process.HasExited)
+                {
+                    process.Kill(entireProcessTree: true);
+                    process.WaitForExit(2000);
+                }
+            }
+        }
+        catch { }
+        finally { process.Dispose(); }
     }
 }
