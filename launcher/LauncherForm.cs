@@ -27,6 +27,7 @@ internal sealed class LauncherForm : Form
     private readonly Button startButton;
     private readonly Button stopButton;
     private readonly Button restartButton;
+    private readonly Button homeButton;
     private readonly Button displayButton;
     private Process? backendProcess;
     private Process? collectorProcess;
@@ -64,6 +65,7 @@ internal sealed class LauncherForm : Form
         startButton = MakeButton("Start", StartServicesAsync);
         stopButton = MakeButton("Stop", StopServicesAsync);
         restartButton = MakeButton("Restart", RestartServicesAsync);
+        homeButton = MakeButton("Open Home", OpenHome);
         displayButton = MakeButton("Open Display", OpenDisplay);
         stopButton.Enabled = false;
         restartButton.Enabled = false;
@@ -97,6 +99,7 @@ internal sealed class LauncherForm : Form
         statusPanel.Controls.Add(startButton);
         statusPanel.Controls.Add(stopButton);
         statusPanel.Controls.Add(restartButton);
+        statusPanel.Controls.Add(homeButton);
         statusPanel.Controls.Add(displayButton);
         layout.Controls.Add(statusPanel, 0, 1);
 
@@ -156,6 +159,7 @@ internal sealed class LauncherForm : Form
     {
         var menu = new ContextMenuStrip();
         menu.Items.Add("Show AC Display Unit", null, (_, _) => ShowWindow());
+        menu.Items.Add("Open Home", null, (_, _) => OpenHome());
         menu.Items.Add("Open Display", null, (_, _) => OpenDisplay());
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("Start", null, async (_, _) => await StartServicesAsync());
@@ -283,6 +287,12 @@ internal sealed class LauncherForm : Form
     private Task OpenDisplay()
     {
         Process.Start(new ProcessStartInfo($"http://localhost:{(int)portField.Value}/display") { UseShellExecute = true });
+        return Task.CompletedTask;
+    }
+
+    private Task OpenHome()
+    {
+        Process.Start(new ProcessStartInfo($"http://localhost:{(int)portField.Value}/") { UseShellExecute = true });
         return Task.CompletedTask;
     }
 
