@@ -29,6 +29,7 @@ internal sealed class LauncherForm : Form
     private readonly Button restartButton;
     private readonly Button homeButton;
     private readonly Button displayButton;
+    private readonly Icon appIcon;
     private Process? backendProcess;
     private Process? collectorProcess;
     private CancellationTokenSource? startupCancellation;
@@ -39,6 +40,8 @@ internal sealed class LauncherForm : Form
     public LauncherForm()
     {
         Text = "AC Display Unit";
+        appIcon = LoadAppIcon();
+        Icon = appIcon;
         StartPosition = FormStartPosition.CenterScreen;
         MinimumSize = new Size(680, 460);
         Size = new Size(760, 560);
@@ -123,7 +126,7 @@ internal sealed class LauncherForm : Form
 
         trayIcon = new NotifyIcon
         {
-            Icon = SystemIcons.Application,
+            Icon = appIcon,
             Text = "AC Display Unit",
             Visible = true,
             ContextMenuStrip = BuildTrayMenu(),
@@ -136,6 +139,12 @@ internal sealed class LauncherForm : Form
             AppendLog($"Configuration: {settingsPath}");
             if (settings.AutoStart) await StartServicesAsync();
         };
+    }
+
+    private Icon LoadAppIcon()
+    {
+        var iconPath = Path.Combine(bundleRoot, "assets", "logo.ico");
+        return File.Exists(iconPath) ? new Icon(iconPath) : SystemIcons.Application;
     }
 
     private Button MakeButton(string text, Func<Task> action)

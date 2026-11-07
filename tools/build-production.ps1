@@ -17,6 +17,7 @@ $WebOutput = Join-Path $ReleaseRoot "web"
 $BackendOutput = Join-Path $ReleaseRoot "backend"
 $CollectorOutput = Join-Path $ReleaseRoot "collector"
 $NodeOutput = Join-Path $ReleaseRoot "node"
+$AssetsOutput = Join-Path $ReleaseRoot "assets"
 
 Write-Host "Building frontend..."
 & npm --prefix $FrontendDir run build
@@ -24,7 +25,7 @@ if ($LASTEXITCODE -ne 0) { throw "Frontend build failed." }
 
 Remove-Item -LiteralPath $ReleaseRoot -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath $BuildRoot -Recurse -Force -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Force -Path $WebOutput, $BackendOutput, $CollectorOutput, $NodeOutput, $BuildRoot | Out-Null
+New-Item -ItemType Directory -Force -Path $WebOutput, $BackendOutput, $CollectorOutput, $NodeOutput, $AssetsOutput, $BuildRoot | Out-Null
 
 Write-Host "Publishing telemetry collector..."
 & dotnet publish (Join-Path $BackendRoot "collector\AcTelemetryCollector.csproj") `
@@ -43,6 +44,7 @@ Copy-Item -Path (Join-Path $FrontendDir "dist\*") -Destination $WebOutput -Recur
 Copy-Item -LiteralPath (Join-Path $BackendRoot "src") -Destination $BackendOutput -Recurse -Force
 Copy-Item -LiteralPath (Join-Path $BackendRoot "data") -Destination $BackendOutput -Recurse -Force
 Copy-Item -LiteralPath (Join-Path $BackendRoot "package.json") -Destination $BackendOutput -Force
+Copy-Item -Path (Join-Path $BackendRoot "assets\*") -Destination $AssetsOutput -Recurse -Force
 
 $nodeCommand = Get-Command node.exe -ErrorAction Stop
 Copy-Item -LiteralPath $nodeCommand.Source -Destination (Join-Path $NodeOutput "node.exe") -Force
