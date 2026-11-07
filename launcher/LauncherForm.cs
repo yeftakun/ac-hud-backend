@@ -35,7 +35,7 @@ internal sealed class LauncherForm : Form
 
     public LauncherForm()
     {
-        Text = "AC HUD";
+        Text = "AC Display Unit";
         StartPosition = FormStartPosition.CenterScreen;
         MinimumSize = new Size(680, 460);
         Size = new Size(760, 560);
@@ -119,7 +119,7 @@ internal sealed class LauncherForm : Form
         trayIcon = new NotifyIcon
         {
             Icon = SystemIcons.Application,
-            Text = "AC HUD",
+            Text = "AC Display Unit",
             Visible = true,
             ContextMenuStrip = BuildTrayMenu(),
         };
@@ -277,7 +277,7 @@ internal sealed class LauncherForm : Form
         if (allowExit || !closeToTrayField.Checked) return;
         args.Cancel = true;
         Hide();
-        trayIcon.ShowBalloonTip(1500, "AC HUD", "Berjalan di system tray.", ToolTipIcon.Info);
+        trayIcon.ShowBalloonTip(1500, "AC Display Unit", "Berjalan di system tray.", ToolTipIcon.Info);
     }
 
     private async Task WaitForBackendAsync(string healthUrl)
