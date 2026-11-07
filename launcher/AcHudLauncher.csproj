@@ -7,5 +7,6 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>AcHud</AssemblyName>
     <RootNamespace>AcHudLauncher</RootNamespace>
+    <ApplicationIcon>..\assets\logo.ico</ApplicationIcon>
   </PropertyGroup>
 </Project>
