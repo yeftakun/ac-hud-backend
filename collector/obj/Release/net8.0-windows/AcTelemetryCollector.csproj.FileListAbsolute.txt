@@ -12,3 +12,4 @@ D:\code\ac-hud-backend\collector\obj\Release\net8.0-windows\refint\AcTelemetryCo
 D:\code\ac-hud-backend\collector\obj\Release\net8.0-windows\AcTelemetryCollector.pdb
 D:\code\ac-hud-backend\collector\obj\Release\net8.0-windows\AcTelemetryCollector.genruntimeconfig.cache
 D:\code\ac-hud-backend\collector\obj\Release\net8.0-windows\ref\AcTelemetryCollector.dll
+D:\code\ac-hud-backend\collector\obj\Release\net8.0-windows\AcTelemetryCollector.sourcelink.json

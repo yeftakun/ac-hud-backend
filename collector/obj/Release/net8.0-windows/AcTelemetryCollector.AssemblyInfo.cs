@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AcTelemetryCollector")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a4312f51f9dfb1d7eaf44228ee96ad40bae632f9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+38181eb4e7fa1cbd62c71b7e9cd51b47dea91143")]
 [assembly: System.Reflection.AssemblyProductAttribute("AcTelemetryCollector")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AcTelemetryCollector")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

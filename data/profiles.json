@@ -2,7 +2,7 @@
   {
     "schemaVersion": 1,
     "id": "profile_001",
-    "name": "GT3",
+    "name": "Display Unit 1",
     "canvas": {
       "w": 1280,
       "h": 680,
@@ -44,7 +44,9 @@
               "color": "#ff3b30"
             }
           ],
-          "redline": 7800
+          "redline": 7800,
+          "useDefaultRedline": false,
+          "minRpm": 4000
         }
       },
       {
